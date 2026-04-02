@@ -1,0 +1,16 @@
+C:\BESTHACK\backend\Fulogi.Application\bin\Debug\net10.0\Fulogi.Application.deps.json
+C:\BESTHACK\backend\Fulogi.Application\bin\Debug\net10.0\Fulogi.Application.dll
+C:\BESTHACK\backend\Fulogi.Application\bin\Debug\net10.0\Fulogi.Application.pdb
+C:\BESTHACK\backend\Fulogi.Application\bin\Debug\net10.0\Fulogi.Core.dll
+C:\BESTHACK\backend\Fulogi.Application\bin\Debug\net10.0\Fulogi.Core.pdb
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.csproj.AssemblyReference.cache
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.AssemblyInfoInputs.cache
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.AssemblyInfo.cs
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.csproj.CoreCompileInputs.cache
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.sourcelink.json
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.A.CC01FCBF.Up2Date
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.dll
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\refint\Fulogi.Application.dll
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\Fulogi.Application.pdb
+C:\BESTHACK\backend\Fulogi.Application\obj\Debug\net10.0\ref\Fulogi.Application.dll

@@ -1,0 +1,419 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\BESTHACK\\backend\\Fulogi\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\migrations\\20260402195023_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\controllers\\stationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:controllers\\stationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\cotracts\\stationrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:cotracts\\stationrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\fulogi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:fulogi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1873518F-4B61-01A7-1A94-015493403C69}|..\\Fulogi.Application\\Fulogi.Application.csproj|c:\\besthack\\backend\\fulogi.application\\services\\stationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\abstractions\\istationsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\abstractions\\istationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\cotracts\\stationresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:cotracts\\stationresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\repositories\\stationsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\models\\station.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\enums\\priority.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\enums\\status.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\models\\fuelrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\models\\delivery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\models\\storage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\enums\\status.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\fulogidbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\storageentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\fuelrequestentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\stationentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\deliveryentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\enums\\priority.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 8,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "20260402195023_InitialCreate.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T19:50:24.036Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Fulogi.csproj",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Fulogi.csproj",
+              "RelativeDocumentMoniker": "Fulogi.csproj",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Fulogi.csproj",
+              "RelativeToolTip": "Fulogi.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-04-02T19:41:33.082Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-02T19:16:21.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StationRequest.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Cotracts\\StationRequest.cs",
+              "RelativeDocumentMoniker": "Cotracts\\StationRequest.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Cotracts\\StationRequest.cs",
+              "RelativeToolTip": "Cotracts\\StationRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T19:00:44.983Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "StationResponse.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Cotracts\\StationResponse.cs",
+              "RelativeDocumentMoniker": "Cotracts\\StationResponse.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Cotracts\\StationResponse.cs",
+              "RelativeToolTip": "Cotracts\\StationResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:59:32.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Status.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Enums\\Status.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Enums\\Status.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Enums\\Status.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Enums\\Status.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:53:20.385Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Priority.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Enums\\Priority.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Enums\\Priority.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Enums\\Priority.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Enums\\Priority.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:53:14.13Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Status.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Enums\\Status.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Enums\\Status.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Enums\\Status.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Enums\\Status.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:53:04.244Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Priority.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Enums\\Priority.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Enums\\Priority.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Enums\\Priority.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Enums\\Priority.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:53:00.289Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "IStationsRepository.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Abstractions\\IStationsRepository.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Abstractions\\IStationsRepository.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Abstractions\\IStationsRepository.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Abstractions\\IStationsRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:50:38.259Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "IStationService.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Abstractions\\IStationService.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Abstractions\\IStationService.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Abstractions\\IStationService.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Abstractions\\IStationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:50:34.506Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "StationController.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Controllers\\StationController.cs",
+              "RelativeDocumentMoniker": "Controllers\\StationController.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Controllers\\StationController.cs",
+              "RelativeToolTip": "Controllers\\StationController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAIAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:48:32.298Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "StationService.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Application\\Services\\StationService.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Application\\Services\\StationService.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Application\\Services\\StationService.cs",
+              "RelativeToolTip": "..\\Fulogi.Application\\Services\\StationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:40:13.518Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "StationsRepository.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Repositories\\StationsRepository.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Repositories\\StationsRepository.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Repositories\\StationsRepository.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Repositories\\StationsRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAABQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:22:12.315Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "DeliveryEntity.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\DeliveryEntity.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\DeliveryEntity.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\DeliveryEntity.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Entities\\DeliveryEntity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T18:07:12.124Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "FuelRequestEntity.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\FuelRequestEntity.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\FuelRequestEntity.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\FuelRequestEntity.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Entities\\FuelRequestEntity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T17:51:58.801Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "StorageEntity.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T09:00:34.226Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "FuelRequest.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\FuelRequest.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\FuelRequest.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\FuelRequest.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Models\\FuelRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T08:53:03.666Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Delivery.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Delivery.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\Delivery.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Delivery.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Models\\Delivery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T08:52:51.624Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Storage.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Storage.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\Storage.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Storage.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Models\\Storage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T08:52:39.488Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Station.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Station.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\Station.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Station.cs",
+              "RelativeToolTip": "..\\Fulogi.Core\\Models\\Station.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T08:28:37.404Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "StationEntity.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StationEntity.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\StationEntity.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StationEntity.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\Entities\\StationEntity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T08:26:08.269Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "FulogiDbContext.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\FulogiDbContext.cs",
+              "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\FulogiDbContext.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\FulogiDbContext.cs",
+              "RelativeToolTip": "..\\Fulogi.DataAccess\\FulogiDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABLAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T08:24:41.397Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T07:56:53.949Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
