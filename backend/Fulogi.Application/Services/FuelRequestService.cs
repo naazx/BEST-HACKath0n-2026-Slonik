@@ -32,5 +32,29 @@ namespace Fulogi.Application.Services
         {
             return await _fuelRequestsRepository.Delete(id);
         }
+
+        public async Task<List<FuelRequest>> GetSortedFuelRequests()
+        {
+            var allRequests = await _fuelRequestsRepository.Get();
+
+            var sortedRequests = allRequests
+        .OrderBy(x => (int)x.Status)
+        .ThenByDescending(x => x.Priority)
+        .ToList();
+
+            return sortedRequests;
+        }
+
+        public async Task<List<FuelRequest>> GetUrgentFuelRequests()
+        {
+            var allRequests = await _fuelRequestsRepository.Get();
+
+            var urgentRequests = allRequests
+                .Where(x => (int)x.Priority == 3 && (int)x.Status == 1)
+                // .OrderBy(x => x.CreatedAt) Хто чекає найбільше - той перший(хз чи треба)
+                .ToList();
+
+            return urgentRequests;
+        }
     }
 }

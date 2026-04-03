@@ -31,6 +31,22 @@ namespace Fulogi.Controllers
             return Ok(response);
         }
 
+        [HttpGet("sorted-by-priority-and-status")]
+        public async Task<ActionResult<List<FuelRequestResponse>>> GetSortedFuelRequests()
+        {
+            var sortedFuelRequests = await _fuelRequestService.GetSortedFuelRequests();
+
+            var response = sortedFuelRequests.Select(f => new FuelRequestResponse(
+                f.Id,
+                f.StationId,
+                f.FuelAmount,
+                f.Priority,
+                f.Status,
+                f.CreatedAt));
+
+            return Ok(response);
+        }
+
         [HttpPost]
         public async Task<ActionResult> CreateFuelRequest([FromBody] FuelRequestRequest request)
         {
@@ -69,6 +85,13 @@ namespace Fulogi.Controllers
         public async Task<ActionResult<Guid>> DeleteFuelRequest(Guid id)
         {
             return Ok(await _fuelRequestService.DeleteFuelRequest(id));
+        }
+
+        [HttpGet("urgent")]
+        public async Task<ActionResult<List<FuelRequest>>> GetUrgentFuelRequests()
+        {
+            var urgentRequests = await _fuelRequestService.GetUrgentFuelRequests();
+            return Ok(urgentRequests);
         }
     }
 }
