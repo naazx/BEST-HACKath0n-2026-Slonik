@@ -17,10 +17,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-const string ConnectionString = "Data Source=C:\\BESTHACK\\data\\fuel-management-dev.sqlite";
+var dataDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "data");
+Directory.CreateDirectory(dataDir);
+
+var dbPath = Path.Combine(dataDir, "fuel-management-dev.sqlite");
 
 builder.Services.AddDbContext<FulogiDbContext>(options =>
-    options.UseSqlite(ConnectionString)
+    options.UseSqlite($"Data Source={dbPath}")
     );
 
 builder.Services.AddScoped<IStationService, StationService>();
