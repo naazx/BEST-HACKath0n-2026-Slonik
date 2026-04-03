@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../Fulogi.Application/Fulogi.Application.csproj" />
+  <Project Path="../Fulogi.Core/Fulogi.Core.csproj" />
+  <Project Path="../Fulogi.DataAccess/Fulogi.DataAccess.csproj" />
+  <Project Path="Fulogi.csproj" />
+</Solution>
