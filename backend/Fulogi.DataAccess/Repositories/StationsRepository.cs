@@ -36,18 +36,57 @@ namespace Fulogi.DataAccess.Repositories
         }
         public async Task<Guid> Update(Guid id, string name, double latitude, double longitude)
         {
-            await _context.Stations.Where(s => s.Id == id)
+            var updatedCount = await _context.Stations.Where(s => s.Id == id)
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.Name, b => name)
                 .SetProperty(b => b.Latitude, b => latitude)
                 .SetProperty(b => b.Longitude, b => longitude)
             );
+
+            if (updatedCount == 0)
+            {
+                throw new KeyNotFoundException("Station was not found.");
+            }
+
             return id;
         }
         public async Task<Guid> Delete(Guid id)
         {
-            await _context.Stations.Where(s => s.Id == id)
+            var stationExists = await _context.Stations
+                .AsNoTracking()
+                .AnyAsync(s => s.Id == id);
+
+            if (!stationExists)
+            {
+                throw new KeyNotFoundException("Station was not found.");
+            }
+
+            var fuelRequestIds = await _context.FuelRequests
+                .AsNoTracking()
+                .Where(f => f.StationId == id)
+                .Select(f => f.Id)
+                .ToListAsync();
+
+            if (fuelRequestIds.Count > 0)
+            {
+                await _context.Deliveries
+                    .Where(d => fuelRequestIds.Contains(d.RequestId))
+                    .ExecuteDeleteAsync();
+
+                await _context.FuelRequests
+                    .Where(f => f.StationId == id)
+                    .ExecuteDeleteAsync();
+            }
+
+            var deletedCount = await _context.Stations
+                .Where(s => s.Id == id)
                 .ExecuteDeleteAsync();
+
+            if (deletedCount == 0)
+            {
+                throw new KeyNotFoundException("Station was not found.");
+            }
+
             return id;
         }
     }

@@ -19,6 +19,15 @@ namespace Fulogi.DataAccess.Repositories
 
         public async Task<Guid> Create(FuelRequest fuelRequest)
         {
+            var stationExists = await _context.Stations
+                .AsNoTracking()
+                .AnyAsync(s => s.Id == fuelRequest.StationId);
+
+            if (!stationExists)
+            {
+                throw new InvalidOperationException("Cannot create fuel request because station does not exist.");
+            }
+
             var entity = new FuelRequestEntity
             {
                 Id = fuelRequest.Id,
@@ -52,6 +61,24 @@ namespace Fulogi.DataAccess.Repositories
 
         public async Task<Guid> Update(Guid id, Guid stationId, double fuelAmount, Priority priority, Status status, DateTime createdAt)
         {
+            var fuelRequestExists = await _context.FuelRequests
+                .AsNoTracking()
+                .AnyAsync(f => f.Id == id);
+
+            if (!fuelRequestExists)
+            {
+                throw new KeyNotFoundException("Fuel request was not found.");
+            }
+
+            var stationExists = await _context.Stations
+                .AsNoTracking()
+                .AnyAsync(s => s.Id == stationId);
+
+            if (!stationExists)
+            {
+                throw new InvalidOperationException("Cannot update fuel request because station does not exist.");
+            }
+
             await _context.FuelRequests
                 .Where(f => f.Id == id)
                 .ExecuteUpdateAsync(f => f
@@ -66,6 +93,19 @@ namespace Fulogi.DataAccess.Repositories
 
         public async Task<Guid> Delete(Guid id)
         {
+            var fuelRequestExists = await _context.FuelRequests
+                .AsNoTracking()
+                .AnyAsync(f => f.Id == id);
+
+            if (!fuelRequestExists)
+            {
+                throw new KeyNotFoundException("Fuel request was not found.");
+            }
+
+            await _context.Deliveries
+                .Where(d => d.RequestId == id)
+                .ExecuteDeleteAsync();
+
             await _context.FuelRequests
                 .Where(f => f.Id == id)
                 .ExecuteDeleteAsync();

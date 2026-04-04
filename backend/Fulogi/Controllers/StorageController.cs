@@ -52,20 +52,38 @@ namespace Fulogi.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateStorage(Guid id, [FromBody] StorageRequest request)
         {
-            var storageId = await _storageService.UpdateStorage(
-                id,
-                request.Name,
-                request.Latitude,
-                request.Longitude,
-                request.FuelAvailable);
+            try
+            {
+                var storageId = await _storageService.UpdateStorage(
+                    id,
+                    request.Name,
+                    request.Latitude,
+                    request.Longitude,
+                    request.FuelAvailable);
 
-            return Ok(storageId);
+                return Ok(storageId);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<Guid>> DeleteStorage(Guid id)
         {
-            return Ok(await _storageService.DeleteStorage(id));
+            try
+            {
+                return Ok(await _storageService.DeleteStorage(id));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

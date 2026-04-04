@@ -33,15 +33,15 @@ CREATE TABLE FuelRequest (
 CREATE TABLE Delivery (
   Id INTEGER PRIMARY KEY,
   RequestId INTEGER NOT NULL,
-  WarehouseId INTEGER NOT NULL,
+  StorageId INTEGER NOT NULL,
   DeliveredAmount INTEGER NOT NULL CHECK (DeliveredAmount >= 0),
   Status TEXT NOT NULL CHECK (Status IN ('queued', 'en_route', 'delivered', 'failed')),
   CreatedAt TEXT NOT NULL,
   FOREIGN KEY (RequestId) REFERENCES FuelRequest(Id),
-  FOREIGN KEY (WarehouseId) REFERENCES Storage(Id)
+  FOREIGN KEY (StorageId) REFERENCES Storage(Id)
 );
 
 CREATE INDEX idx_fuel_request_station_id ON FuelRequest(StationId);
 CREATE INDEX idx_fuel_request_status ON FuelRequest(Status);
 CREATE INDEX idx_delivery_request_id ON Delivery(RequestId);
-CREATE INDEX idx_delivery_warehouse_id ON Delivery(WarehouseId);
+CREATE INDEX idx_delivery_storage_id ON Delivery(StorageId);

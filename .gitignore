@@ -1,1 +1,17 @@
 node_modules
+
+# .NET build output
+**/bin/
+**/obj/
+
+# Visual Studio / Rider / VS Code local files
+**/.vs/
+*.user
+*.suo
+
+# Local SQLite data files
+data/*.sqlite
+data/*.db
+
+# Frontend build cache
+**/.vite/

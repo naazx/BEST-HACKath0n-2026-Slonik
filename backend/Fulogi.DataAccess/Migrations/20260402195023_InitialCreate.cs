@@ -12,7 +12,58 @@ namespace Fulogi.DataAccess.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Deliveries",
+                name: "Station",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Latitude = table.Column<double>(type: "REAL", nullable: false),
+                    Longitude = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Station", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Storage",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Latitude = table.Column<double>(type: "REAL", nullable: false),
+                    Longitude = table.Column<double>(type: "REAL", nullable: false),
+                    FuelAvailable = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Storage", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FuelRequest",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    StationId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FuelAmount = table.Column<double>(type: "REAL", nullable: false),
+                    Priority = table.Column<int>(type: "INTEGER", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FuelRequest", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FuelRequest_Station_StationId",
+                        column: x => x.StationId,
+                        principalTable: "Station",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Delivery",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -24,64 +75,51 @@ namespace Fulogi.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Deliveries", x => x.Id);
+                    table.PrimaryKey("PK_Delivery", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Delivery_FuelRequest_RequestId",
+                        column: x => x.RequestId,
+                        principalTable: "FuelRequest",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Delivery_Storage_StorageId",
+                        column: x => x.StorageId,
+                        principalTable: "Storage",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "FuelRequests",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FuelRequests", x => x.Id);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_FuelRequest_StationId",
+                table: "FuelRequest",
+                column: "StationId");
 
-            migrationBuilder.CreateTable(
-                name: "Stations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    Latitude = table.Column<double>(type: "REAL", nullable: false),
-                    Longitude = table.Column<double>(type: "REAL", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Stations", x => x.Id);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_Delivery_RequestId",
+                table: "Delivery",
+                column: "RequestId");
 
-            migrationBuilder.CreateTable(
-                name: "Storages",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    Latitude = table.Column<double>(type: "REAL", nullable: false),
-                    Longitude = table.Column<double>(type: "REAL", nullable: false),
-                    FuelAvailable = table.Column<double>(type: "REAL", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Storages", x => x.Id);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_Delivery_StorageId",
+                table: "Delivery",
+                column: "StorageId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Deliveries");
+                name: "Delivery");
 
             migrationBuilder.DropTable(
-                name: "FuelRequests");
+                name: "FuelRequest");
 
             migrationBuilder.DropTable(
-                name: "Stations");
+                name: "Station");
 
             migrationBuilder.DropTable(
-                name: "Storages");
+                name: "Storage");
         }
     }
 }

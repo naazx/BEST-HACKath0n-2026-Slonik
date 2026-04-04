@@ -73,28 +73,53 @@ namespace Fulogi.Controllers
                 return BadRequest(errors);
             }
 
-            var id = await _fuelRequestService.CreateFuelRequest(fuelRequest);
-            return Ok(id);
+            try
+            {
+                var id = await _fuelRequestService.CreateFuelRequest(fuelRequest);
+                return Ok(id);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateFuelRequest(Guid id, [FromBody] FuelRequestRequest request)
         {
-            var fuelRequestId = await _fuelRequestService.UpdateFuelRequest(
-                id,
-                request.StationId,
-                request.FuelAmount,
-                request.Priority,
-                request.Status,
-                request.CreatedAt);
+            try
+            {
+                var fuelRequestId = await _fuelRequestService.UpdateFuelRequest(
+                    id,
+                    request.StationId,
+                    request.FuelAmount,
+                    request.Priority,
+                    request.Status,
+                    request.CreatedAt);
 
-            return Ok(fuelRequestId);
+                return Ok(fuelRequestId);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<Guid>> DeleteFuelRequest(Guid id)
         {
-            return Ok(await _fuelRequestService.DeleteFuelRequest(id));
+            try
+            {
+                return Ok(await _fuelRequestService.DeleteFuelRequest(id));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet("urgent")]
