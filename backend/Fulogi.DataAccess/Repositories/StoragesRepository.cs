@@ -22,7 +22,13 @@ namespace Fulogi.DataAccess.Repositories
                 Name = storage.Name,
                 Latitude = storage.Latitude,
                 Longitude = storage.Longitude,
-                FuelAvailable = storage.FuelAvailable
+                FuelItems = storage.FuelItems.Select(f => new StorageFuelItemEntity
+                {
+                    Id = f.Id,
+                    StorageId = storage.Id,
+                    FuelType = f.FuelType,
+                    Amount = f.Amount
+                }).ToList()
             };
 
             await _context.Storages.AddAsync(entity);
@@ -33,22 +39,41 @@ namespace Fulogi.DataAccess.Repositories
 
         public async Task<List<Storage>> Get()
         {
-            var entities = await _context.Storages.AsNoTracking().ToListAsync();
+            var entities = await _context.Storages.Include(s => s.FuelItems).AsNoTracking().ToListAsync();
 
             return entities
-                .Select(s => Storage.Create(s.Id, s.Name ?? string.Empty, s.Latitude, s.Longitude, s.FuelAvailable).Storage)
+                .Select(s => Storage.Create(
+                    s.Id, 
+                    s.Name ?? string.Empty, 
+                    s.Latitude, 
+                    s.Longitude, 
+                    s.FuelItems.Select(f => new StorageFuelItem { Id = f.Id, StorageId = f.StorageId, FuelType = f.FuelType, Amount = f.Amount }).ToList()
+                ).Storage)
                 .ToList();
         }
 
-        public async Task<Guid> Update(Guid id, string name, double latitude, double longitude, double fuelAvailable)
+        public async Task<Guid> Update(Guid id, string name, double latitude, double longitude, List<StorageFuelItem> fuelItems)
         {
             await _context.Storages
                 .Where(s => s.Id == id)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(b => b.Name, _ => name)
                     .SetProperty(b => b.Latitude, _ => latitude)
-                    .SetProperty(b => b.Longitude, _ => longitude)
-                    .SetProperty(b => b.FuelAvailable, _ => fuelAvailable));
+                    .SetProperty(b => b.Longitude, _ => longitude));
+
+            var existingItems = await _context.Set<StorageFuelItemEntity>().Where(f => f.StorageId == id).ToListAsync();
+            _context.Set<StorageFuelItemEntity>().RemoveRange(existingItems);
+
+            var newItems = fuelItems.Select(f => new StorageFuelItemEntity
+            {
+                Id = f.Id,
+                StorageId = id,
+                FuelType = f.FuelType,
+                Amount = f.Amount
+            });
+            await _context.Set<StorageFuelItemEntity>().AddRangeAsync(newItems);
+            
+            await _context.SaveChangesAsync();
 
             return id;
         }

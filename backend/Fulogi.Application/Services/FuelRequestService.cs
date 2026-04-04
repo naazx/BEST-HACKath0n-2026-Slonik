@@ -2,6 +2,7 @@
 using Fulogi.Core.Enums;
 using Fulogi.Core.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Fulogi.Application.Services
 {
@@ -26,7 +27,76 @@ namespace Fulogi.Application.Services
 
         public async Task<Guid> CreateFuelRequest(FuelRequest fuelRequest)
         {
-            return await _fuelRequestsRepository.Create(fuelRequest);
+            // 1. Формуємо список DTO
+            var itemDtos = fuelRequest.Items
+                .Select(i => new FuelRequest.RequestItemDto(i.FuelType, i.Amount))
+                .ToList();
+
+            var totalRequestedAmount = itemDtos.Sum(i => i.Amount);
+
+            // 2. Шукаємо склад
+            var storages = await _storagesRepository.Get();
+            var storage = PickStorageWithCapacity(storages, totalRequestedAmount);
+
+            // 3. Визначаємо статус
+            var status = storage is not null ? Status.InProgress : Status.Await;
+
+            // 4. Створюємо запит (один раз)
+            var (requestToPersist, createError) = FuelRequest.Create(
+                fuelRequest.Id,
+                fuelRequest.StationId,
+                fuelRequest.Priority,
+                status,
+                fuelRequest.CreatedAt,
+                itemDtos);
+
+            if (!string.IsNullOrEmpty(createError))
+            {
+                throw new InvalidOperationException(createError);
+            }
+
+            var requestId = await _fuelRequestsRepository.Create(requestToPersist!);
+
+            // 5. Якщо склад знайдено — віднімаємо пальне та створюємо доставку
+            if (storage is not null)
+            {
+                // ВІДНІМАЄМО ПАЛИВО
+                foreach (var requestedItem in itemDtos)
+                {
+                    var storageFuelItem = storage.FuelItems
+                        .FirstOrDefault(fi => fi.FuelType == requestedItem.FuelType);
+
+                    if (storageFuelItem != null)
+                    {
+                        storageFuelItem.Amount -= requestedItem.Amount;
+                    }
+                }
+
+                await _storagesRepository.Update(
+    storage.Id,
+    storage.Name,
+    storage.Latitude,
+    storage.Longitude,
+    storage.FuelItems.ToList()
+);
+                // СТВОРЮЄМО ДОСТАВКУ
+                var (delivery, deliveryError) = Delivery.Create(
+                    Guid.NewGuid(),
+                    requestId,
+                    storage.Id,
+                    totalRequestedAmount,
+                    Status.InProgress,
+                    DateTime.UtcNow);
+
+                if (!string.IsNullOrEmpty(deliveryError))
+                {
+                    throw new InvalidOperationException(deliveryError);
+                }
+
+                await _deliveriesRepository.Create(delivery!);
+            }
+
+            return requestId;
         }
 
         public async Task<List<FuelRequest>> GetAllFuelRequests()
@@ -40,10 +110,8 @@ namespace Fulogi.Application.Services
             return await BuildFuelRequestDetails(requests);
         }
 
-        // ЗМІНЕНО: Замість double fuelAmount тепер List<FuelRequest.RequestItemDto> items
         public async Task<Guid> UpdateFuelRequest(Guid id, Guid stationId, List<FuelRequest.RequestItemDto> items, Priority priority, Status status, DateTime createdAt)
         {
-            // Передаємо items в репозиторій (репозиторій теж доведеться оновити)
             return await _fuelRequestsRepository.Update(id, stationId, items, priority, status, createdAt);
         }
 
@@ -55,13 +123,10 @@ namespace Fulogi.Application.Services
         public async Task<List<FuelRequest>> GetSortedFuelRequests()
         {
             var allRequests = await _fuelRequestsRepository.Get();
-
-            var sortedRequests = allRequests
+            return allRequests
                 .OrderBy(x => (int)x.Status)
                 .ThenByDescending(x => x.Priority)
                 .ToList();
-
-            return sortedRequests;
         }
 
         public async Task<List<FuelRequestDetails>> GetSortedFuelRequestDetails()
@@ -73,13 +138,10 @@ namespace Fulogi.Application.Services
         public async Task<List<FuelRequest>> GetUrgentFuelRequests()
         {
             var allRequests = await _fuelRequestsRepository.Get();
-
-            var urgentRequests = allRequests
+            return allRequests
                 .Where(x => (int)x.Priority == 3 && (int)x.Status == 1)
                 .OrderBy(x => x.CreatedAt)
                 .ToList();
-
-            return urgentRequests;
         }
 
         private async Task<List<FuelRequestDetails>> BuildFuelRequestDetails(List<FuelRequest> requests)
@@ -102,41 +164,39 @@ namespace Fulogi.Application.Services
                     StorageId = storage?.Id,
                     StorageName = storage?.Name,
                     DeliveryId = delivery?.Id,
-                    
-                    // ЗМІНЕНО: Замінили FuelAmount = request.FuelAmount на масив Items
-                    Items = request.Items.ToList(), 
-                    
+                    Items = request.Items.ToList(),
                     Priority = request.Priority,
                     Status = request.Status,
                     CreatedAt = request.CreatedAt,
                     DistanceKm = station is not null && storage is not null
-                        ? CalculateDistanceKm(station.Latitude, station.Longitude, storage.Latitude, storage.Longitude)
-                        : null
+? Math.Round(CalculateDistanceKm(station.Latitude, station.Longitude, storage.Latitude, storage.Longitude), 1)
+: null
                 };
             }).ToList();
         }
 
         private static Delivery? PickDelivery(FuelRequest request, List<Delivery> deliveries)
         {
-            var requestDeliveries = deliveries
-                .Where(d => d.RequestId == request.Id)
-                .ToList();
-
-            if (requestDeliveries.Count == 0)
-            {
-                return null;
-            }
+            var requestDeliveries = deliveries.Where(d => d.RequestId == request.Id).ToList();
+            if (requestDeliveries.Count == 0) return null;
 
             if (request.Status == Status.InProgress)
             {
-                return requestDeliveries
-                    .FirstOrDefault(d => d.Status == Status.InProgress)
+                return requestDeliveries.FirstOrDefault(d => d.Status == Status.InProgress)
                     ?? requestDeliveries.OrderByDescending(d => d.CreatedAt).First();
             }
 
-            return requestDeliveries
-                .FirstOrDefault(d => d.Status == Status.Done)
+            return requestDeliveries.FirstOrDefault(d => d.Status == Status.Done)
                 ?? requestDeliveries.OrderByDescending(d => d.CreatedAt).First();
+        }
+
+        private static Storage? PickStorageWithCapacity(IReadOnlyList<Storage> storages, double totalAmount)
+        {
+            if (totalAmount <= 0) return null;
+            return storages
+                .Where(s => s.FuelItems != null && s.FuelItems.Sum(fi => fi.Amount) >= totalAmount)
+                .OrderByDescending(s => s.FuelItems.Sum(fi => fi.Amount))
+                .FirstOrDefault();
         }
 
         private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
@@ -144,20 +204,13 @@ namespace Fulogi.Application.Services
             const double earthRadiusKm = 6371;
             var dLat = DegreesToRadians(lat2 - lat1);
             var dLon = DegreesToRadians(lon2 - lon1);
-            var a =
-                Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(DegreesToRadians(lat1)) *
-                Math.Cos(DegreesToRadians(lat2)) *
-                Math.Sin(dLon / 2) *
-                Math.Sin(dLon / 2);
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
             var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
             return earthRadiusKm * c;
         }
 
-        private static double DegreesToRadians(double degrees)
-        {
-            return degrees * Math.PI / 180;
-        }
+        private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180;
     }
 }

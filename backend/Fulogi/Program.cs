@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen();
 
 var dataDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "data");
 Directory.CreateDirectory(dataDir);
-var dbPath = Path.Combine(dataDir, "fuel-management-dev.sqliteф");
+var dbPath = Path.Combine(dataDir, "fuel-management-dev.sqlite");
 
 builder.Services.AddDbContext<FulogiDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
@@ -112,16 +112,31 @@ static async Task EnsureStationsTableAsync(FulogiDbContext dbContext, DbConnecti
 
 static async Task EnsureStoragesTableAsync(FulogiDbContext dbContext, DbConnection connection)
 {
-    if (await TableExistsAsync(connection, "Storages")) return;
-    await dbContext.Database.ExecuteSqlRawAsync("""
-        CREATE TABLE "Storages" (
-            "Id" TEXT NOT NULL CONSTRAINT "PK_Storages" PRIMARY KEY,
-            "Name" TEXT NULL,
-            "Latitude" REAL NOT NULL,
-            "Longitude" REAL NOT NULL,
-            "FuelAvailable" REAL NOT NULL
-        );
-        """);
+    if (!await TableExistsAsync(connection, "Storages"))
+    {
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE "Storages" (
+                "Id" TEXT NOT NULL CONSTRAINT "PK_Storages" PRIMARY KEY,
+                "Name" TEXT NULL,
+                "Latitude" REAL NOT NULL,
+                "Longitude" REAL NOT NULL
+            );
+            """);
+    }
+    if (!await TableExistsAsync(connection, "StorageFuelItems"))
+    {
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE "StorageFuelItems" (
+                "Id" TEXT NOT NULL CONSTRAINT "PK_StorageFuelItems" PRIMARY KEY,
+                "StorageId" TEXT NOT NULL,
+                "FuelType" INTEGER NOT NULL,
+                "Amount" REAL NOT NULL,
+                CONSTRAINT "FK_StorageFuelItems_Storages_StorageId" 
+                    FOREIGN KEY ("StorageId") REFERENCES "Storages" ("Id") ON DELETE CASCADE
+            );
+            CREATE INDEX "IX_StorageFuelItems_StorageId" ON "StorageFuelItems" ("StorageId");
+            """);
+    }
 }
 
 static async Task EnsureDeliveriesTableAsync(FulogiDbContext dbContext, DbConnection connection)

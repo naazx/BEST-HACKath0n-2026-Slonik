@@ -30,7 +30,7 @@ namespace Fulogi.DataAccess.Repositories
         {
             var entities = await _context.Stations.AsNoTracking().ToListAsync();
 
-            var stations = entities.Select(s => Station.Create(s.Id, s.Name, s.Latitude, s.Longitude).Station).ToList();
+            var stations = entities.Select(s => Station.Create(s.Id, s.Name ?? string.Empty, s.Latitude, s.Longitude).Station).ToList();
 
             return stations;
         }

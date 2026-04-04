@@ -12,6 +12,9 @@ namespace Fulogi.DataAccess
         public DbSet<DeliveryEntity> Deliveries { get; set; }
         public DbSet<FuelRequestEntity> FuelRequests { get; set; }
         public DbSet<FuelRequestItemEntity> FuelRequestItems { get; set; }
+        
+
+        public DbSet<StorageFuelItemEntity> StorageFuelItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +25,12 @@ namespace Fulogi.DataAccess
                 .WithOne(i => i.FuelRequest)
                 .HasForeignKey(i => i.FuelRequestId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StorageEntity>()
+                .HasMany(s => s.FuelItems)
+                .WithOne()           
+                .HasForeignKey(i => i.StorageId)
+                .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }
