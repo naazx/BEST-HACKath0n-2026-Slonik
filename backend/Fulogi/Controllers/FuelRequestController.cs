@@ -19,14 +19,19 @@ namespace Fulogi.Controllers
         [HttpGet]
         public async Task<ActionResult<List<FuelRequestResponse>>> GetAllFuelRequests()
         {
-            var fuelRequests = await _fuelRequestService.GetAllFuelRequests();
+            var fuelRequests = await _fuelRequestService.GetAllFuelRequestDetails();
             var response = fuelRequests.Select(f => new FuelRequestResponse(
                 f.Id,
                 f.StationId,
+                f.StationName,
+                f.StorageId,
+                f.StorageName,
+                f.DeliveryId,
                 f.FuelAmount,
                 f.Priority,
                 f.Status,
-                f.CreatedAt));
+                f.CreatedAt,
+                f.DistanceKm));
 
             return Ok(response);
         }
@@ -34,15 +39,20 @@ namespace Fulogi.Controllers
         [HttpGet("sorted-by-priority-and-status")]
         public async Task<ActionResult<List<FuelRequestResponse>>> GetSortedFuelRequests()
         {
-            var sortedFuelRequests = await _fuelRequestService.GetSortedFuelRequests();
+            var sortedFuelRequests = await _fuelRequestService.GetSortedFuelRequestDetails();
 
             var response = sortedFuelRequests.Select(f => new FuelRequestResponse(
                 f.Id,
                 f.StationId,
+                f.StationName,
+                f.StorageId,
+                f.StorageName,
+                f.DeliveryId,
                 f.FuelAmount,
                 f.Priority,
                 f.Status,
-                f.CreatedAt));
+                f.CreatedAt,
+                f.DistanceKm));
 
             return Ok(response);
         }

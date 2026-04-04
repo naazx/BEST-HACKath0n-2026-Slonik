@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
   MapPin,
@@ -11,81 +11,146 @@ import {
   Building2,
   Truck,
 } from 'lucide-react';
+import {
+  type StationDto,
+  type StorageDto,
+  type FuelRequestDto,
+  type DeliveryDto,
+  type UrgentFuelRequestDto,
+  type UiPriority,
+  type UiRequestStatus,
+  getStations,
+  createStation,
+  updateStation,
+  deleteStation as apiDeleteStation,
+  getStorages,
+  createStorage,
+  updateStorage,
+  deleteStorage as apiDeleteStorage,
+  getFuelRequestsSorted,
+  getUrgentFuelRequests,
+  createFuelRequest,
+  updateFuelRequest,
+  deleteFuelRequest as apiDeleteFuelRequest,
+  getDeliveries,
+  createDelivery,
+  updateDelivery,
+  dtoPriorityToUi,
+  dtoStatusToUi,
+  uiPriorityToApi,
+  uiStatusToApi,
+} from '../api/fulogiApi';
 
-// Types
-type Priority = 'high' | 'medium' | 'low';
-type RequestStatus = 'pending' | 'in_process' | 'delivered';
+type Priority = UiPriority;
+type RequestStatus = UiRequestStatus;
 
-interface Station {
-  id: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-}
-
-interface Storage {
-  id: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  fuelAvailable: number;
-}
+interface Station extends StationDto {}
+interface Storage extends StorageDto {}
 
 interface FuelRequest {
-  id: number;
-  stationId: number;
-  storageId: number;
+  id: string;
+  stationId: string;
+  stationName: string;
+  storageId: string | null;
+  storageName: string | null;
+  deliveryId: string | null;
   fuelAmount: number;
   priority: Priority;
   status: RequestStatus;
   createdAt: Date;
-  distance: number;
+  distanceKm: number | null;
 }
 
-// Mock data
-const mockStations: Station[] = [
-  { id: 1, name: 'Downtown Station', latitude: 40.7128, longitude: -74.0060 },
-  { id: 2, name: 'Airport Station', latitude: 40.6413, longitude: -73.7781 },
-  { id: 3, name: 'Suburban Station', latitude: 40.7580, longitude: -73.9855 },
-  { id: 4, name: 'Highway Station', latitude: 40.7489, longitude: -73.9680 },
-];
+interface StorageRecommendation {
+  storage: Storage;
+  distanceKm: number;
+  canFulfill: boolean;
+}
 
-const mockStorages: Storage[] = [
-  { id: 1, name: 'Central Warehouse', latitude: 40.7306, longitude: -73.9352, fuelAvailable: 50000 },
-  { id: 2, name: 'North Depot', latitude: 40.7831, longitude: -73.9712, fuelAvailable: 35000 },
-  { id: 3, name: 'East Storage', latitude: 40.7282, longitude: -73.7949, fuelAvailable: 42000 },
-];
+const userTimeZone =
+  typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
 
-// Calculate distance between two coordinates (Haversine formula)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+function mapFuelRequests(fuels: FuelRequestDto[]): FuelRequest[] {
+  return fuels.map(fr => ({
+    id: fr.id,
+    stationId: fr.stationId,
+    stationName: fr.stationName,
+    storageId: fr.storageId,
+    storageName: fr.storageName,
+    deliveryId: fr.deliveryId,
+    fuelAmount: fr.fuelAmount,
+    priority: dtoPriorityToUi(fr.priority),
+    status: dtoStatusToUi(fr.status),
+    createdAt: new Date(fr.createdAt),
+    distanceKm: fr.distanceKm,
+  }));
+}
+
+function toApiDateTime(date: Date): string {
+  const pad = (value: number) => String(Math.abs(Math.trunc(value))).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const offsetHours = pad(offsetMinutes / 60);
+  const offsetRemainderMinutes = pad(offsetMinutes % 60);
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetRemainderMinutes}`;
+}
+
+function formatRequestDateTime(date: Date): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    ...(userTimeZone ? { timeZone: userTimeZone } : {}),
+  }).format(date);
+}
+
+function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const earthRadiusKm = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return earthRadiusKm * c;
 }
 
-// Find closest storage to a station
-function findClosestStorage(station: Station, storages: Storage[]): { storage: Storage; distance: number } {
-  let closest = storages[0];
-  let minDistance = calculateDistance(station.latitude, station.longitude, closest.latitude, closest.longitude);
+function getStorageRecommendations(
+  station: Station | undefined,
+  storages: Storage[],
+  requiredFuelAmount: number,
+): StorageRecommendation[] {
+  if (!station) return [];
 
-  for (const storage of storages) {
-    const distance = calculateDistance(station.latitude, station.longitude, storage.latitude, storage.longitude);
-    if (distance < minDistance) {
-      minDistance = distance;
-      closest = storage;
-    }
-  }
-
-  return { storage: closest, distance: minDistance };
+  return storages
+    .map(storage => ({
+      storage,
+      distanceKm: calculateDistanceKm(
+        station.latitude,
+        station.longitude,
+        storage.latitude,
+        storage.longitude,
+      ),
+      canFulfill: storage.fuelAvailable >= requiredFuelAmount,
+    }))
+    .sort((a, b) => {
+      if (a.canFulfill !== b.canFulfill) {
+        return a.canFulfill ? -1 : 1;
+      }
+      return a.distanceKm - b.distanceKm;
+    });
 }
 
-// Priority colors
-const priorityColors = {
+const priorityColors: Record<Priority, string> = {
   high: 'bg-red-100 border-red-300 text-red-800',
   medium: 'bg-yellow-100 border-yellow-300 text-yellow-800',
   low: 'bg-green-100 border-green-300 text-green-800',
@@ -103,53 +168,38 @@ const statusBadgeStyles: Record<RequestStatus, string> = {
   delivered: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
-function nextEntityId<T extends { id: number }>(items: T[]): number {
-  return items.length === 0 ? 1 : Math.max(...items.map(i => i.id)) + 1;
+function showErr(e: unknown) {
+  window.alert(e instanceof Error ? e.message : String(e));
+}
+
+function getRequestCardClasses(status: RequestStatus, priority: Priority): string {
+  if (status === 'delivered') {
+    return 'border-slate-200 bg-slate-50/80 text-slate-700 opacity-70';
+  }
+
+  if (status === 'in_process') {
+    return 'border-blue-200 bg-blue-50/70 text-slate-900';
+  }
+
+  return priorityColors[priority];
 }
 
 export default function App() {
-  const [stations, setStations] = useState<Station[]>(() => [...mockStations]);
-  const [storages, setStorages] = useState<Storage[]>(() => [...mockStorages]);
-
-  const [requests, setRequests] = useState<FuelRequest[]>([
-    {
-      id: 1,
-      stationId: 1,
-      storageId: 1,
-      fuelAmount: 5000,
-      priority: 'high',
-      status: 'pending',
-      createdAt: new Date('2026-04-01T08:00:00'),
-      distance: 5.2,
-    },
-    {
-      id: 2,
-      stationId: 2,
-      storageId: 3,
-      fuelAmount: 3000,
-      priority: 'medium',
-      status: 'in_process',
-      createdAt: new Date('2026-04-01T09:30:00'),
-      distance: 15.8,
-    },
-    {
-      id: 3,
-      stationId: 3,
-      storageId: 2,
-      fuelAmount: 4500,
-      priority: 'high',
-      status: 'delivered',
-      createdAt: new Date('2026-04-01T10:15:00'),
-      distance: 3.1,
-    },
-  ]);
+  const [stations, setStations] = useState<Station[]>([]);
+  const [storages, setStorages] = useState<Storage[]>([]);
+  const [requests, setRequests] = useState<FuelRequest[]>([]);
+  const [deliveries, setDeliveries] = useState<DeliveryDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
+  const [showUrgentModal, setShowUrgentModal] = useState(false);
   const [showStationModal, setShowStationModal] = useState(false);
   const [showStorageModal, setShowStorageModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<FuelRequest | null>(null);
+  const [urgentRequestIds, setUrgentRequestIds] = useState<string[]>([]);
   const [newRequest, setNewRequest] = useState({
-    stationId: 1,
+    stationId: '',
     fuelAmount: 1000,
     priority: 'medium' as Priority,
   });
@@ -168,17 +218,67 @@ export default function App() {
 
   const [stationForm, setStationForm] = useState(defaultStationForm);
   const [storageForm, setStorageForm] = useState(defaultStorageForm);
-  const [editingStationId, setEditingStationId] = useState<number | null>(null);
-  const [editingStorageId, setEditingStorageId] = useState<number | null>(null);
-  const [responseStorageId, setResponseStorageId] = useState<number | null>(null);
+  const [editingStationId, setEditingStationId] = useState<string | null>(null);
+  const [editingStorageId, setEditingStorageId] = useState<string | null>(null);
+  const [responseStorageId, setResponseStorageId] = useState<string | null>(null);
+
+  const loadAll = useCallback(async () => {
+    const [stationList, storageList, deliveryList, fuelList, urgentFuelList] = await Promise.all([
+      getStations(),
+      getStorages(),
+      getDeliveries(),
+      getFuelRequestsSorted(),
+      getUrgentFuelRequests(),
+    ]);
+    setStations(stationList);
+    setStorages(storageList);
+    setDeliveries(deliveryList);
+    const merged = mapFuelRequests(fuelList);
+    setRequests(merged);
+    setUrgentRequestIds(urgentFuelList.map((request: UrgentFuelRequestDto) => request.id));
+    setSelectedRequest(prev => {
+      if (!prev) return null;
+      return merged.find(r => r.id === prev.id) ?? null;
+    });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        await loadAll();
+      } catch (e) {
+        if (!cancelled) showErr(e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAll]);
 
   useEffect(() => {
     if (selectedRequest?.status === 'pending') {
-      setResponseStorageId(selectedRequest.storageId);
+      const station = stations.find(s => s.id === selectedRequest.stationId);
+      const recommendedStorage = getStorageRecommendations(
+        station,
+        storages,
+        selectedRequest.fuelAmount,
+      )[0];
+      setResponseStorageId(recommendedStorage?.storage.id ?? storages[0]?.id ?? null);
     } else {
       setResponseStorageId(null);
     }
-  }, [selectedRequest?.id, selectedRequest?.status]);
+  }, [selectedRequest?.id, selectedRequest?.status, selectedRequest?.stationId, selectedRequest?.fuelAmount, storages, stations]);
+
+  useEffect(() => {
+    if (stations.length === 0) return;
+    setNewRequest(nr =>
+      nr.stationId && stations.some(s => s.id === nr.stationId) ? nr : { ...nr, stationId: stations[0].id },
+    );
+  }, [stations]);
 
   const openNewStation = () => {
     setEditingStationId(null);
@@ -213,198 +313,296 @@ export default function App() {
     setShowStorageModal(true);
   };
 
-  const saveStation = () => {
+  const saveStation = async () => {
     const lat = Number(stationForm.latitude);
     const lon = Number(stationForm.longitude);
     if (!stationForm.name.trim() || Number.isNaN(lat) || Number.isNaN(lon)) return;
-
-    if (editingStationId != null) {
-      setStations(prev =>
-        prev.map(s =>
-          s.id === editingStationId ? { ...s, name: stationForm.name.trim(), latitude: lat, longitude: lon } : s
-        )
-      );
-      setRequests(prev =>
-        prev.map(r => {
-          if (r.stationId !== editingStationId) return r;
-          const st = { id: editingStationId, name: stationForm.name.trim(), latitude: lat, longitude: lon };
-          const storage = storages.find(s => s.id === r.storageId);
-          if (!storage) return r;
-          return { ...r, distance: calculateDistance(st.latitude, st.longitude, storage.latitude, storage.longitude) };
-        })
-      );
-    } else {
-      setStations(prev => [...prev, { id: nextEntityId(prev), name: stationForm.name.trim(), latitude: lat, longitude: lon }]);
+    try {
+      setBusy(true);
+      const body = { name: stationForm.name.trim(), latitude: lat, longitude: lon };
+      if (editingStationId) {
+        await updateStation(editingStationId, body);
+      } else {
+        await createStation(body);
+      }
+      await loadAll();
+      setShowStationModal(false);
+      setStationForm(defaultStationForm());
+      setEditingStationId(null);
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
     }
-    setShowStationModal(false);
-    setStationForm(defaultStationForm());
-    setEditingStationId(null);
   };
 
-  const saveStorage = () => {
+  const saveStorage = async () => {
     const lat = Number(storageForm.latitude);
     const lon = Number(storageForm.longitude);
     const fuel = Number(storageForm.fuelAvailable);
     if (!storageForm.name.trim() || Number.isNaN(lat) || Number.isNaN(lon) || Number.isNaN(fuel) || fuel < 0) return;
-
-    if (editingStorageId != null) {
-      setStorages(prev =>
-        prev.map(s =>
-          s.id === editingStorageId
-            ? { ...s, name: storageForm.name.trim(), latitude: lat, longitude: lon, fuelAvailable: fuel }
-            : s
-        )
-      );
-      setRequests(prev =>
-        prev.map(r => {
-          if (r.storageId !== editingStorageId) return r;
-          const station = stations.find(s => s.id === r.stationId);
-          if (!station) return r;
-          const storageEntity = {
-            id: editingStorageId,
-            name: storageForm.name.trim(),
-            latitude: lat,
-            longitude: lon,
-            fuelAvailable: fuel,
-          };
-          return {
-            ...r,
-            distance: calculateDistance(station.latitude, station.longitude, storageEntity.latitude, storageEntity.longitude),
-          };
-        })
-      );
-    } else {
-      setStorages(prev => [
-        ...prev,
-        { id: nextEntityId(prev), name: storageForm.name.trim(), latitude: lat, longitude: lon, fuelAvailable: fuel },
-      ]);
+    try {
+      setBusy(true);
+      const body = { name: storageForm.name.trim(), latitude: lat, longitude: lon, fuelAvailable: fuel };
+      if (editingStorageId) {
+        await updateStorage(editingStorageId, body);
+      } else {
+        await createStorage(body);
+      }
+      await loadAll();
+      setShowStorageModal(false);
+      setStorageForm(defaultStorageForm());
+      setEditingStorageId(null);
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
     }
-    setShowStorageModal(false);
-    setStorageForm(defaultStorageForm());
-    setEditingStorageId(null);
   };
 
-  const deleteStorage = (id: number) => {
-    const used = requests.some(r => r.storageId === id && r.status !== 'delivered');
-    if (used) {
-      window.alert('Cannot delete: this storage is assigned to an active request.');
+  const deleteStorageLocal = async (id: string) => {
+    const blocked = deliveries.some(
+      d => d.storageId === id && dtoStatusToUi(d.status) !== 'delivered',
+    );
+    if (blocked) {
+      window.alert('Cannot delete: this storage is linked to an active delivery.');
       return;
     }
     if (!window.confirm('Delete this storage facility?')) return;
-    setStorages(prev => prev.filter(s => s.id !== id));
+    try {
+      setBusy(true);
+      await apiDeleteStorage(id);
+      await loadAll();
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const deleteStation = (id: number) => {
-    const used = requests.some(r => r.stationId === id && r.status !== 'delivered');
-    if (used) {
-      window.alert('Cannot delete: this station has an active delivery request.');
+  const deleteStationLocal = async (id: string) => {
+    const blocked = requests.some(r => r.stationId === id && r.status !== 'delivered');
+    if (blocked) {
+      window.alert('Cannot delete: this station has an active request.');
       return;
     }
     if (!window.confirm('Delete this station?')) return;
-    setStations(prev => {
-      const filtered = prev.filter(s => s.id !== id);
-      setNewRequest(nr =>
-        nr.stationId === id ? { ...nr, stationId: filtered[0]?.id ?? nr.stationId } : nr
-      );
-      return filtered;
-    });
-  };
-
-  const handleCreateRequest = () => {
-    if (storages.length === 0 || stations.length === 0) return;
-    setRequests(prev => {
-      const station = stations.find(s => s.id === newRequest.stationId)!;
-      const { storage, distance } = findClosestStorage(station, storages);
-      const request: FuelRequest = {
-        id: nextEntityId(prev),
-        stationId: newRequest.stationId,
-        storageId: storage.id,
-        fuelAmount: newRequest.fuelAmount,
-        priority: newRequest.priority,
-        status: 'pending',
-        createdAt: new Date(),
-        distance,
-      };
-      return [...prev, request];
-    });
-    setShowModal(false);
-    setNewRequest({ stationId: stations[0]?.id ?? 1, fuelAmount: 1000, priority: 'medium' });
-  };
-
-  const syncSelectedRequest = (updated: FuelRequest) => {
-    setRequests(prev => prev.map(r => (r.id === updated.id ? updated : r)));
-    setSelectedRequest(updated);
-  };
-
-  const updatePendingRequestFields = (patch: Partial<Pick<FuelRequest, 'priority' | 'fuelAmount'>>) => {
-    if (!selectedRequest || selectedRequest.status !== 'pending') return;
-    syncSelectedRequest({ ...selectedRequest, ...patch });
-  };
-
-  const dispatchFromPending = () => {
-    if (!selectedRequest || selectedRequest.status !== 'pending' || storages.length === 0) return;
-    const sid = responseStorageId ?? selectedRequest.storageId;
-    const storage = storages.find(s => s.id === sid);
-    const station = stations.find(s => s.id === selectedRequest.stationId);
-    if (!storage || !station) return;
-    const distance = calculateDistance(station.latitude, station.longitude, storage.latitude, storage.longitude);
-    syncSelectedRequest({
-      ...selectedRequest,
-      storageId: sid,
-      distance,
-      status: 'in_process',
-    });
-    setResponseStorageId(null);
-  };
-
-  const markDelivered = () => {
-    if (!selectedRequest || selectedRequest.status !== 'in_process') return;
-    const amount = selectedRequest.fuelAmount;
-    setStorages(prev =>
-      prev.map(s => (s.id === selectedRequest.storageId ? { ...s, fuelAvailable: Math.max(0, s.fuelAvailable - amount) } : s))
-    );
-    syncSelectedRequest({ ...selectedRequest, status: 'delivered' });
-  };
-
-  // Sort requests by priority (high > medium > low) then by distance
-  const sortedRequests = [...requests].sort((a, b) => {
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    try {
+      setBusy(true);
+      await apiDeleteStation(id);
+      await loadAll();
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
     }
-    return a.distance - b.distance;
-  });
+  };
+
+  const deleteRequestLocal = async (id: string) => {
+    if (!window.confirm('Delete this fuel request?')) return;
+    try {
+      setBusy(true);
+      await apiDeleteFuelRequest(id);
+      if (selectedRequest?.id === id) {
+        setSelectedRequest(null);
+      }
+      await loadAll();
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCreateRequest = async () => {
+    if (storages.length === 0 || stations.length === 0 || !newRequest.stationId) return;
+    try {
+      setBusy(true);
+      await createFuelRequest({
+        stationId: newRequest.stationId,
+        fuelAmount: newRequest.fuelAmount,
+        priority: uiPriorityToApi(newRequest.priority),
+        status: 'await',
+        createdAt: toApiDateTime(new Date()),
+      });
+      await loadAll();
+      setShowModal(false);
+      setNewRequest({
+        stationId: stations[0]?.id ?? '',
+        fuelAmount: 1000,
+        priority: 'medium',
+      });
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const persistPendingUpdate = async (next: {
+    priority?: Priority;
+    fuelAmount?: number;
+  }) => {
+    if (!selectedRequest || selectedRequest.status !== 'pending') return;
+    const priority = next.priority ?? selectedRequest.priority;
+    const fuelAmount = next.fuelAmount ?? selectedRequest.fuelAmount;
+    try {
+      setBusy(true);
+      await updateFuelRequest(selectedRequest.id, {
+        stationId: selectedRequest.stationId,
+        fuelAmount,
+        priority: uiPriorityToApi(priority),
+        status: uiStatusToApi('pending'),
+        createdAt: toApiDateTime(selectedRequest.createdAt),
+      });
+      await loadAll();
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const dispatchFromPending = async () => {
+    if (!selectedRequest || selectedRequest.status !== 'pending' || storages.length === 0) return;
+    const sid = responseStorageId;
+    if (!sid) {
+      window.alert('Select a storage.');
+      return;
+    }
+    const storage = storages.find(s => s.id === sid);
+    if (!storage) {
+      window.alert('Selected storage was not found.');
+      return;
+    }
+    if (storage.fuelAvailable < selectedRequest.fuelAmount) {
+      window.alert(
+        `Not enough fuel in storage "${storage.name}". Available: ${storage.fuelAvailable.toLocaleString()} L, required: ${selectedRequest.fuelAmount.toLocaleString()} L.`,
+      );
+      return;
+    }
+    try {
+      setBusy(true);
+      await createDelivery({
+        requestId: selectedRequest.id,
+        storageId: sid,
+        deliveredAmount: selectedRequest.fuelAmount,
+        status: 'inProgress',
+        createdAt: toApiDateTime(new Date()),
+      });
+      await updateFuelRequest(selectedRequest.id, {
+        stationId: selectedRequest.stationId,
+        fuelAmount: selectedRequest.fuelAmount,
+        priority: uiPriorityToApi(selectedRequest.priority),
+        status: uiStatusToApi('in_process'),
+        createdAt: toApiDateTime(selectedRequest.createdAt),
+      });
+      await loadAll();
+      setResponseStorageId(null);
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const markDelivered = async () => {
+    if (!selectedRequest || selectedRequest.status !== 'in_process') return;
+    const storage = storages.find(s => s.id === selectedRequest.storageId);
+    const delivery = deliveries.find(
+      d => d.requestId === selectedRequest.id && dtoStatusToUi(d.status) === 'in_process',
+    );
+    try {
+      setBusy(true);
+      await updateFuelRequest(selectedRequest.id, {
+        stationId: selectedRequest.stationId,
+        fuelAmount: selectedRequest.fuelAmount,
+        priority: uiPriorityToApi(selectedRequest.priority),
+        status: uiStatusToApi('delivered'),
+        createdAt: toApiDateTime(selectedRequest.createdAt),
+      });
+      if (delivery) {
+        await updateDelivery(delivery.id, {
+          requestId: delivery.requestId,
+          storageId: delivery.storageId,
+          deliveredAmount: delivery.deliveredAmount,
+          status: 'done',
+          createdAt: delivery.createdAt,
+        });
+      }
+      if (storage) {
+        await updateStorage(storage.id, {
+          name: storage.name,
+          latitude: storage.latitude,
+          longitude: storage.longitude,
+          fuelAvailable: Math.max(0, storage.fuelAvailable - selectedRequest.fuelAmount),
+        });
+      }
+      await loadAll();
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const stationForNewRequest = stations.find(s => s.id === newRequest.stationId);
+  const newRequestRecommendations = getStorageRecommendations(
+    stationForNewRequest,
+    storages,
+    newRequest.fuelAmount,
+  );
+  const recommendedStorageForNewRequest = newRequestRecommendations[0];
+
+  const selectedRequestStation = selectedRequest
+    ? stations.find(s => s.id === selectedRequest.stationId)
+    : undefined;
+  const responseStorageRecommendations = getStorageRecommendations(
+    selectedRequestStation,
+    storages,
+    selectedRequest?.fuelAmount ?? 0,
+  );
+  const recommendedResponseStorage = responseStorageRecommendations[0];
+  const requestsByStatus: Record<RequestStatus, FuelRequest[]> = {
+    pending: requests.filter(request => request.status === 'pending'),
+    in_process: requests.filter(request => request.status === 'in_process'),
+    delivered: requests.filter(request => request.status === 'delivered'),
+  };
+  const urgentRequests = requests.filter(request => urgentRequestIds.includes(request.id));
 
   return (
     <div className="size-full bg-gray-50 overflow-auto">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
-        {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Fuel Delivery Management</h1>
-            <p className="text-gray-600 mt-1">Monitor and manage fuel transportation requests</p>
+            <p className="text-gray-600 mt-1">
+              {loading ? 'Loading from API…' : 'Monitor and manage fuel transportation requests'}
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              disabled={busy}
               onClick={openNewStation}
-              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-800 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-800 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <Building2 className="w-5 h-5 text-gray-600" />
               New station
             </button>
             <button
               type="button"
+              disabled={busy}
               onClick={openNewStorage}
-              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-800 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 border border-gray-300 bg-white text-gray-800 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <Warehouse className="w-5 h-5 text-gray-600" />
               New storage
             </button>
             <button
               type="button"
+              disabled={busy || stations.length === 0 || storages.length === 0}
               onClick={() => setShowModal(true)}
-              disabled={stations.length === 0 || storages.length === 0}
               className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-5 h-5" />
@@ -413,53 +611,117 @@ export default function App() {
           </div>
         </div>
 
+        {!loading && urgentRequests.length > 0 && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold uppercase tracking-wide text-red-700">Critical requests</div>
+                <p className="mt-1 text-sm text-red-900">
+                  {urgentRequests.length} high-priority pending request{urgentRequests.length === 1 ? '' : 's'} need attention now.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setShowUrgentModal(true)}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                View critical requests
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Requests List */}
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Requests</h2>
-            <div className="space-y-3">
-              {sortedRequests.map(request => {
-                const station = stations.find(s => s.id === request.stationId);
-                const storage = storages.find(s => s.id === request.storageId);
-
-                return (
-                  <div
-                    key={request.id}
-                    onClick={() => setSelectedRequest(request)}
-                    className={`p-4 rounded-lg border-2 cursor-pointer hover:shadow-lg transition-shadow ${priorityColors[request.priority]}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="font-semibold">Request #{request.id}</span>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full border font-medium ${statusBadgeStyles[request.status]}`}
-                          >
-                            {statusLabels[request.status]}
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-white/80 rounded-full uppercase">
-                            {request.priority}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="w-4 h-4 shrink-0" />
-                          <span className="font-medium">{storage?.name ?? 'Unknown storage'}</span>
-                          <ArrowRight className="w-4 h-4 shrink-0" />
-                          <span className="font-medium">{station?.name ?? 'Unknown station'}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold">{request.fuelAmount.toLocaleString()} L</div>
-                        <div className="text-sm">{request.distance.toFixed(1)} km</div>
-                      </div>
+            <div className="space-y-5">
+              {(['pending', 'in_process', 'delivered'] as RequestStatus[]).map(status => (
+                <section
+                  key={status}
+                  className={`rounded-2xl border p-4 ${
+                    status === 'pending'
+                      ? 'border-amber-200 bg-amber-50/50'
+                      : status === 'in_process'
+                        ? 'border-blue-200 bg-blue-50/40'
+                        : 'border-slate-200 bg-slate-100/60'
+                  }`}
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-1 rounded-full border font-medium ${statusBadgeStyles[status]}`}>
+                        {statusLabels[status]}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {requestsByStatus[status].length} request{requestsByStatus[status].length === 1 ? '' : 's'}
+                      </span>
                     </div>
+                    {status === 'delivered' && (
+                      <span className="text-xs text-slate-500">Completed shipments are shown with lower emphasis.</span>
+                    )}
                   </div>
-                );
-              })}
+                  <div className="space-y-3">
+                    {requestsByStatus[status].map(request => (
+                      <div
+                        key={request.id}
+                        onClick={() => setSelectedRequest(request)}
+                        className={`p-4 rounded-lg border-2 cursor-pointer hover:shadow-lg transition-shadow ${getRequestCardClasses(request.status, request.priority)}`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="font-semibold font-mono text-sm">{request.id.slice(0, 8)}…</span>
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full border font-medium ${statusBadgeStyles[request.status]}`}
+                              >
+                                {statusLabels[request.status]}
+                              </span>
+                              <span className="text-xs px-2 py-1 bg-white/80 rounded-full uppercase">
+                                {request.priority}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <MapPin className="w-4 h-4 shrink-0" />
+                              <span className="font-medium">
+                                {request.status === 'pending' ? '' : (request.storageName ?? 'Unknown storage')}
+                              </span>
+                              <ArrowRight className="w-4 h-4 shrink-0" />
+                              <span className="font-medium">{request.stationName || 'Unknown station'}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">{request.fuelAmount.toLocaleString()} L</div>
+                            <div className="text-sm">
+                              {request.distanceKm == null ? '' : `${request.distanceKm.toFixed(1)} km`}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={e => {
+                              e.stopPropagation();
+                              void deleteRequestLocal(request.id);
+                            }}
+                            className="shrink-0 p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-50"
+                            title="Delete request"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {requestsByStatus[status].length === 0 && (
+                      <p className="py-4 text-sm text-gray-500 text-center">No {statusLabels[status].toLowerCase()} requests.</p>
+                    )}
+                  </div>
+                </section>
+              ))}
+              {!loading && requests.length === 0 && (
+                <p className="text-gray-500 text-sm py-8 text-center">No requests yet. Create stations, storage, then a request.</p>
+              )}
             </div>
           </div>
 
-          {/* Storage & stations */}
           <div className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Storage facilities</h2>
@@ -484,31 +746,31 @@ export default function App() {
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Fuel className="w-4 h-4 text-blue-600" />
-                            <span className="font-semibold text-gray-900">
-                              {storage.fuelAvailable.toLocaleString()}
-                            </span>
+                            <span className="font-semibold text-gray-900">{storage.fuelAvailable.toLocaleString()}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-1">
                             <button
                               type="button"
+                              disabled={busy}
                               onClick={e => {
                                 e.stopPropagation();
                                 openEditStorage(storage);
                               }}
-                              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                               title="Edit storage"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               type="button"
+                              disabled={busy}
                               onClick={e => {
                                 e.stopPropagation();
-                                deleteStorage(storage.id);
+                                void deleteStorageLocal(storage.id);
                               }}
-                              className="p-2 rounded-lg text-red-600 hover:bg-red-50"
+                              className="p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-50"
                               title="Delete storage"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -519,7 +781,7 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
-                {storages.length === 0 && (
+                {!loading && storages.length === 0 && (
                   <p className="px-4 py-6 text-sm text-gray-500 text-center">No storage facilities yet.</p>
                 )}
               </div>
@@ -548,22 +810,24 @@ export default function App() {
                           <div className="flex justify-end gap-1">
                             <button
                               type="button"
+                              disabled={busy}
                               onClick={e => {
                                 e.stopPropagation();
                                 openEditStation(station);
                               }}
-                              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                               title="Edit station"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               type="button"
+                              disabled={busy}
                               onClick={e => {
                                 e.stopPropagation();
-                                deleteStation(station.id);
+                                void deleteStationLocal(station.id);
                               }}
-                              className="p-2 rounded-lg text-red-600 hover:bg-red-50"
+                              className="p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-50"
                               title="Delete station"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -574,7 +838,7 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
-                {stations.length === 0 && (
+                {!loading && stations.length === 0 && (
                   <p className="px-4 py-6 text-sm text-gray-500 text-center">No stations yet.</p>
                 )}
               </div>
@@ -582,25 +846,22 @@ export default function App() {
           </div>
         </div>
 
-        {/* New Request Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-gray-900">New Fuel Request</h3>
-                <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Delivery Station
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Delivery station</label>
                   <select
                     value={newRequest.stationId}
-                    onChange={e => setNewRequest({ ...newRequest, stationId: Number(e.target.value) })}
+                    onChange={e => setNewRequest({ ...newRequest, stationId: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     {stations.map(station => (
@@ -612,25 +873,20 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Auto-selected storage (closest)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Closest storage</label>
                   <div className="px-3 py-2 bg-gray-100 rounded-lg text-gray-700">
-                    {stations.length > 0 && storages.length > 0 ? (
-                      <>
-                        {
-                          findClosestStorage(stations.find(s => s.id === newRequest.stationId)!, storages)
-                            .storage.name
-                        }
-                        <span className="text-sm text-gray-500 ml-2">
-                          (
-                          {findClosestStorage(
-                            stations.find(s => s.id === newRequest.stationId)!,
-                            storages
-                          ).distance.toFixed(1)}{' '}
-                          km)
-                        </span>
-                      </>
+                    {recommendedStorageForNewRequest ? (
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900">{recommendedStorageForNewRequest.storage.name}</div>
+                        <div className="text-sm text-gray-500">
+                          {recommendedStorageForNewRequest.distanceKm.toFixed(1)} km away
+                        </div>
+                        {!recommendedStorageForNewRequest.canFulfill && (
+                          <div className="text-xs text-red-600">
+                            No storage currently has enough fuel for this request. This is the closest option.
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <span className="text-gray-500">Add at least one station and storage.</span>
                     )}
@@ -638,13 +894,12 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Priority
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
                   <div className="grid grid-cols-3 gap-2">
                     {(['low', 'medium', 'high'] as Priority[]).map(priority => (
                       <button
                         key={priority}
+                        type="button"
                         onClick={() => setNewRequest({ ...newRequest, priority })}
                         className={`px-4 py-2 rounded-lg border-2 transition-colors ${
                           newRequest.priority === priority
@@ -659,9 +914,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Fuel Amount (Liters)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fuel amount (L)</label>
                   <input
                     type="number"
                     value={newRequest.fuelAmount}
@@ -674,24 +927,28 @@ export default function App() {
               </div>
 
               <button
-                onClick={handleCreateRequest}
-                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                type="button"
+                disabled={busy}
+                onClick={() => void handleCreateRequest()}
+                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
-                Create Request
+                Create request
               </button>
             </div>
           </div>
         )}
 
-        {/* Request Details Modal */}
-        {selectedRequest && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+        {showUrgentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">Request details</h3>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Critical Requests</h3>
+                  <p className="text-sm text-gray-600">High-priority pending requests that require an immediate response.</p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setSelectedRequest(null)}
+                  onClick={() => setShowUrgentModal(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <X className="w-6 h-6" />
@@ -699,9 +956,100 @@ export default function App() {
               </div>
 
               <div className="space-y-3">
+                {urgentRequests.map(request => {
+                  const urgentStation = stations.find(station => station.id === request.stationId);
+                  const urgentRecommendations = getStorageRecommendations(
+                    urgentStation,
+                    storages,
+                    request.fuelAmount,
+                  );
+                  const urgentRecommendedStorage = urgentRecommendations[0];
+
+                  return (
+                    <div key={request.id} className="rounded-xl border border-red-200 bg-red-50/50 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-sm font-semibold text-red-950">{request.id.slice(0, 8)}…</span>
+                            <span className="rounded-full border border-red-200 bg-white px-2 py-1 text-xs font-medium text-red-700">
+                              Critical
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-900">
+                            <span className="font-medium">Destination:</span> {request.stationName}
+                          </div>
+                          <div className="text-sm text-gray-900">
+                            <span className="font-medium">Fuel amount:</span> {request.fuelAmount.toLocaleString()} L
+                          </div>
+                          <div className="text-sm text-gray-900">
+                            <span className="font-medium">Created:</span> {formatRequestDateTime(request.createdAt)}
+                          </div>
+                          {urgentRecommendedStorage && (
+                            <div className="rounded-lg border border-red-200 bg-white px-3 py-2 text-sm">
+                              <div className="font-medium text-gray-900">
+                                Recommended storage: {urgentRecommendedStorage.storage.name}
+                              </div>
+                              <div className="text-gray-600">
+                                Distance: {urgentRecommendedStorage.distanceKm.toFixed(1)} km
+                              </div>
+                              {!urgentRecommendedStorage.canFulfill && (
+                                <div className="text-red-600">This storage is closest, but it does not have enough fuel.</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => {
+                            setShowUrgentModal(false);
+                            setSelectedRequest(request);
+                          }}
+                          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                        >
+                          Respond
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {urgentRequests.length === 0 && (
+                  <p className="py-8 text-center text-sm text-gray-500">No critical requests at the moment.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedRequest && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Request details</h3>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void deleteRequestLocal(selectedRequest.id)}
+                    className="p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    title="Delete request"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRequest(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">Request ID</span>
-                  <span className="font-semibold">#{selectedRequest.id}</span>
+                  <span className="font-semibold font-mono text-xs max-w-[200px] truncate">{selectedRequest.id}</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">Status</span>
@@ -719,12 +1067,13 @@ export default function App() {
                         <button
                           key={priority}
                           type="button"
-                          onClick={() => updatePendingRequestFields({ priority })}
+                          disabled={busy}
+                          onClick={() => void persistPendingUpdate({ priority })}
                           className={`px-2 py-1 rounded-lg border text-xs font-medium transition-colors ${
                             selectedRequest.priority === priority
                               ? priorityColors[priority]
                               : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
+                          } disabled:opacity-50`}
                         >
                           {priority}
                         </button>
@@ -739,18 +1088,18 @@ export default function App() {
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">From</span>
                   <span className="font-semibold text-right">
-                    {storages.find(s => s.id === selectedRequest.storageId)?.name ?? '—'}
+                    {selectedRequest.status === 'pending' ? '' : (selectedRequest.storageName ?? '—')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">To</span>
                   <span className="font-semibold text-right">
-                    {stations.find(s => s.id === selectedRequest.stationId)?.name ?? '—'}
+                    {selectedRequest.stationName || '—'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">Distance</span>
-                  <span className="font-semibold">{selectedRequest.distance.toFixed(2)} km</span>
+                  <span className="font-semibold">{selectedRequest.distanceKm == null ? '' : `${selectedRequest.distanceKm.toFixed(2)} km`}</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">Fuel amount</span>
@@ -759,8 +1108,14 @@ export default function App() {
                       type="number"
                       min={100}
                       step={100}
-                      value={selectedRequest.fuelAmount}
-                      onChange={e => updatePendingRequestFields({ fuelAmount: Number(e.target.value) })}
+                      defaultValue={selectedRequest.fuelAmount}
+                      key={`${selectedRequest.id}-${selectedRequest.fuelAmount}`}
+                      onBlur={e => {
+                        const v = Number(e.target.value);
+                        if (v > 0 && v !== selectedRequest.fuelAmount) {
+                          void persistPendingUpdate({ fuelAmount: v });
+                        }
+                      }}
                       className="w-32 px-2 py-1 border border-gray-300 rounded-lg text-right font-semibold"
                     />
                   ) : (
@@ -770,10 +1125,7 @@ export default function App() {
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">Created</span>
                   <span className="font-semibold">
-                    {selectedRequest.createdAt.toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {formatRequestDateTime(selectedRequest.createdAt)}
                   </span>
                 </div>
               </div>
@@ -784,22 +1136,39 @@ export default function App() {
                   <p className="text-xs text-amber-900/80">
                     Choose the storage that will supply this delivery, then confirm to move the request to in process.
                   </p>
+                  {recommendedResponseStorage && (
+                    <div className="rounded-lg border border-amber-200/80 bg-white/70 p-3">
+                      <div className="text-xs font-medium uppercase tracking-wide text-amber-900/80">Recommended storage</div>
+                      <div className="mt-1 font-medium text-gray-900">{recommendedResponseStorage.storage.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {recommendedResponseStorage.distanceKm.toFixed(1)} km away
+                      </div>
+                      {!recommendedResponseStorage.canFulfill && (
+                        <div className="mt-1 text-xs text-red-600">
+                          No storage currently has enough fuel for this request. This is the closest option.
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <label className="block text-sm font-medium text-gray-800">Delivering storage</label>
                   <select
-                    value={responseStorageId ?? selectedRequest.storageId}
-                    onChange={e => setResponseStorageId(Number(e.target.value))}
+                    value={responseStorageId || recommendedResponseStorage?.storage.id || storages[0]?.id}
+                    onChange={e => setResponseStorageId(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    {storages.map(s => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
+                    {responseStorageRecommendations.map(({ storage, distanceKm, canFulfill }, index) => (
+                      <option key={storage.id} value={storage.id}>
+                        {storage.name} • {distanceKm.toFixed(1)} km
+                        {index === 0 ? ' • recommended' : ''}
+                        {canFulfill ? '' : ' • insufficient fuel'}
                       </option>
                     ))}
                   </select>
                   <button
                     type="button"
-                    onClick={dispatchFromPending}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    disabled={busy}
+                    onClick={() => void dispatchFromPending()}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
                     <Truck className="w-4 h-4" />
                     Confirm dispatch
@@ -810,8 +1179,9 @@ export default function App() {
               {selectedRequest.status === 'in_process' && (
                 <button
                   type="button"
-                  onClick={markDelivered}
-                  className="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  disabled={busy}
+                  onClick={() => void markDelivered()}
+                  className="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
                 >
                   Mark as delivered
                 </button>
@@ -824,7 +1194,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Station create / edit modal */}
         {showStationModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
@@ -874,8 +1243,9 @@ export default function App() {
               </div>
               <button
                 type="button"
-                onClick={saveStation}
-                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700"
+                disabled={busy}
+                onClick={() => void saveStation()}
+                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 Save
               </button>
@@ -883,7 +1253,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Storage create / edit modal */}
         {showStorageModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
@@ -944,8 +1313,9 @@ export default function App() {
               </div>
               <button
                 type="button"
-                onClick={saveStorage}
-                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700"
+                disabled={busy}
+                onClick={() => void saveStorage()}
+                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 Save
               </button>

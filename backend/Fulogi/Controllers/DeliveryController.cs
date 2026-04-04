@@ -47,22 +47,36 @@ namespace Fulogi.Controllers
                 return BadRequest(errors);
             }
 
-            var id = await _deliveryService.CreateDelivery(delivery);
-            return Ok(id);
+            try
+            {
+                var id = await _deliveryService.CreateDelivery(delivery);
+                return Ok(id);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateDelivery(Guid id, [FromBody] DeliveryRequest request)
         {
-            var deliveryId = await _deliveryService.UpdateDelivery(
-                id,
-                request.RequestId,
-                request.StorageId,
-                request.DeliveredAmount,
-                request.Status,
-                request.CreatedAt);
+            try
+            {
+                var deliveryId = await _deliveryService.UpdateDelivery(
+                    id,
+                    request.RequestId,
+                    request.StorageId,
+                    request.DeliveredAmount,
+                    request.Status,
+                    request.CreatedAt);
 
-            return Ok(deliveryId);
+                return Ok(deliveryId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]
