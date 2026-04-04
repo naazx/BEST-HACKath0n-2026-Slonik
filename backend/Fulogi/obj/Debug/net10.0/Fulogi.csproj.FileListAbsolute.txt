@@ -315,3 +315,4 @@ C:\Users\user\BEST-HACKath0n-2026-Slonik\backend\Fulogi\obj\Debug\net10.0\refint
 C:\Users\user\BEST-HACKath0n-2026-Slonik\backend\Fulogi\obj\Debug\net10.0\Fulogi.pdb
 C:\Users\user\BEST-HACKath0n-2026-Slonik\backend\Fulogi\obj\Debug\net10.0\Fulogi.genruntimeconfig.cache
 C:\Users\user\BEST-HACKath0n-2026-Slonik\backend\Fulogi\obj\Debug\net10.0\ref\Fulogi.dll
+C:\Users\user\BEST-HACKath0n-2026-Slonik\backend\Fulogi\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.InMemory.dll

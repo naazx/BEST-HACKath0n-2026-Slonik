@@ -1,7 +1,10 @@
 ﻿using Fulogi.Core.Enums;
+using System.Collections.Generic;
 
 namespace Fulogi.Cotracts
 {
+    public record FuelItemResponse(Guid Id, FuelType FuelType, double Amount);
+
     public record FuelRequestResponse(
         Guid Id,
         Guid StationId,
@@ -9,7 +12,7 @@ namespace Fulogi.Cotracts
         Guid? StorageId,
         string? StorageName,
         Guid? DeliveryId,
-        double FuelAmount,
+        List<FuelItemResponse> Items,
         Priority Priority,
         Status Status,
         DateTime CreatedAt,

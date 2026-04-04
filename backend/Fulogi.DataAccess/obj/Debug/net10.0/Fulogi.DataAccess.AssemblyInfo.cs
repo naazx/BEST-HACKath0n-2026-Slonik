@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Fulogi.DataAccess")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+998b4d190f0a1f262539a348b82c0488fc0b5f5f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d8c029a920e7d548b5c3199f12755f3ae441e49c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Fulogi.DataAccess")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Fulogi.DataAccess")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

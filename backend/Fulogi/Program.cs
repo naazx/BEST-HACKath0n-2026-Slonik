@@ -6,25 +6,23 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
 using System.Text.Json.Serialization;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var dataDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "data");
 Directory.CreateDirectory(dataDir);
-
-var dbPath = Path.Combine(dataDir, "fuel-management-dev.sqlite");
+var dbPath = Path.Combine(dataDir, "fuel-management-dev.sqliteф");
 
 builder.Services.AddDbContext<FulogiDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}")
-    );
+    options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddScoped<IStationService, StationService>();
 builder.Services.AddScoped<IStationsRepository, StationsRepository>();
@@ -35,25 +33,18 @@ builder.Services.AddScoped<IFuelRequestsRepository, FuelRequestsRepository>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 builder.Services.AddScoped<IDeliveriesRepository, DeliveriesRepository>();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
+
 await EnsureDatabaseSchemaAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseSwagger();
-
-app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
@@ -69,17 +60,46 @@ static async Task EnsureDatabaseSchemaAsync(IServiceProvider services)
 
     await EnsureStationsTableAsync(dbContext, connection);
     await EnsureStoragesTableAsync(dbContext, connection);
-    await EnsureFuelRequestsTableAsync(dbContext, connection);
+    await EnsureFuelRequestsTableAsync(dbContext, connection); // Оновлений метод
     await EnsureDeliveriesTableAsync(dbContext, connection);
+}
+
+static async Task EnsureFuelRequestsTableAsync(FulogiDbContext dbContext, DbConnection connection)
+{
+
+    if (!await TableExistsAsync(connection, "FuelRequests"))
+    {
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE "FuelRequests" (
+                "Id" TEXT NOT NULL CONSTRAINT "PK_FuelRequests" PRIMARY KEY,
+                "StationId" TEXT NOT NULL,
+                "Priority" INTEGER NOT NULL,
+                "Status" INTEGER NOT NULL,
+                "CreatedAt" TEXT NOT NULL
+            );
+            CREATE INDEX "IX_FuelRequests_StationId" ON "FuelRequests" ("StationId");
+            """);
+    }
+
+    if (!await TableExistsAsync(connection, "FuelRequestItems"))
+    {
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE "FuelRequestItems" (
+                "Id" TEXT NOT NULL CONSTRAINT "PK_FuelRequestItems" PRIMARY KEY,
+                "FuelRequestId" TEXT NOT NULL,
+                "FuelType" INTEGER NOT NULL,
+                "Amount" REAL NOT NULL,
+                CONSTRAINT "FK_FuelRequestItems_FuelRequests_FuelRequestId" 
+                    FOREIGN KEY ("FuelRequestId") REFERENCES "FuelRequests" ("Id") ON DELETE CASCADE
+            );
+            CREATE INDEX "IX_FuelRequestItems_FuelRequestId" ON "FuelRequestItems" ("FuelRequestId");
+            """);
+    }
 }
 
 static async Task EnsureStationsTableAsync(FulogiDbContext dbContext, DbConnection connection)
 {
-    if (await TableExistsAsync(connection, "Stations"))
-    {
-        return;
-    }
-
+    if (await TableExistsAsync(connection, "Stations")) return;
     await dbContext.Database.ExecuteSqlRawAsync("""
         CREATE TABLE "Stations" (
             "Id" TEXT NOT NULL CONSTRAINT "PK_Stations" PRIMARY KEY,
@@ -92,11 +112,7 @@ static async Task EnsureStationsTableAsync(FulogiDbContext dbContext, DbConnecti
 
 static async Task EnsureStoragesTableAsync(FulogiDbContext dbContext, DbConnection connection)
 {
-    if (await TableExistsAsync(connection, "Storages"))
-    {
-        return;
-    }
-
+    if (await TableExistsAsync(connection, "Storages")) return;
     await dbContext.Database.ExecuteSqlRawAsync("""
         CREATE TABLE "Storages" (
             "Id" TEXT NOT NULL CONSTRAINT "PK_Storages" PRIMARY KEY,
@@ -108,64 +124,9 @@ static async Task EnsureStoragesTableAsync(FulogiDbContext dbContext, DbConnecti
         """);
 }
 
-static async Task EnsureFuelRequestsTableAsync(FulogiDbContext dbContext, DbConnection connection)
-{
-    if (!await TableExistsAsync(connection, "FuelRequests"))
-    {
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE "FuelRequests" (
-                "Id" TEXT NOT NULL CONSTRAINT "PK_FuelRequests" PRIMARY KEY,
-                "StationId" TEXT NOT NULL,
-                "FuelAmount" REAL NOT NULL,
-                "Priority" INTEGER NOT NULL,
-                "Status" INTEGER NOT NULL,
-                "CreatedAt" TEXT NOT NULL
-            );
-            CREATE INDEX "IX_FuelRequests_StationId" ON "FuelRequests" ("StationId");
-            """);
-        return;
-    }
-
-    if (await TableHasColumnAsync(connection, "FuelRequests", "StationId"))
-    {
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE INDEX IF NOT EXISTS "IX_FuelRequests_StationId" ON "FuelRequests" ("StationId");
-            """);
-        return;
-    }
-
-    await dbContext.Database.ExecuteSqlRawAsync("""
-        DROP TABLE IF EXISTS "FuelRequests_Temp";
-        CREATE TABLE "FuelRequests_Temp" (
-            "Id" TEXT NOT NULL CONSTRAINT "PK_FuelRequests_Temp" PRIMARY KEY,
-            "StationId" TEXT NOT NULL,
-            "FuelAmount" REAL NOT NULL,
-            "Priority" INTEGER NOT NULL,
-            "Status" INTEGER NOT NULL,
-            "CreatedAt" TEXT NOT NULL
-        );
-        INSERT INTO "FuelRequests_Temp" ("Id", "StationId", "FuelAmount", "Priority", "Status", "CreatedAt")
-        SELECT
-            "Id",
-            '00000000-0000-0000-0000-000000000000',
-            0.0,
-            1,
-            1,
-            '0001-01-01T00:00:00'
-        FROM "FuelRequests";
-        DROP TABLE "FuelRequests";
-        ALTER TABLE "FuelRequests_Temp" RENAME TO "FuelRequests";
-        CREATE INDEX "IX_FuelRequests_StationId" ON "FuelRequests" ("StationId");
-        """);
-}
-
 static async Task EnsureDeliveriesTableAsync(FulogiDbContext dbContext, DbConnection connection)
 {
-    if (await TableExistsAsync(connection, "Deliveries"))
-    {
-        return;
-    }
-
+    if (await TableExistsAsync(connection, "Deliveries")) return;
     await dbContext.Database.ExecuteSqlRawAsync("""
         CREATE TABLE "Deliveries" (
             "Id" TEXT NOT NULL CONSTRAINT "PK_Deliveries" PRIMARY KEY,
@@ -182,29 +143,10 @@ static async Task<bool> TableExistsAsync(DbConnection connection, string tableNa
 {
     await using var command = connection.CreateCommand();
     command.CommandText = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = $name LIMIT 1;";
-
     var parameter = command.CreateParameter();
     parameter.ParameterName = "$name";
     parameter.Value = tableName;
     command.Parameters.Add(parameter);
-
     var result = await command.ExecuteScalarAsync();
     return result is not null;
-}
-
-static async Task<bool> TableHasColumnAsync(DbConnection connection, string tableName, string columnName)
-{
-    await using var command = connection.CreateCommand();
-    command.CommandText = $"PRAGMA table_info(\"{tableName}\");";
-
-    await using var reader = await command.ExecuteReaderAsync();
-    while (await reader.ReadAsync())
-    {
-        if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-    }
-
-    return false;
 }

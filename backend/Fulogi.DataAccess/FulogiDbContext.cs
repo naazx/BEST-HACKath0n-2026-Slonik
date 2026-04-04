@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Fulogi.DataAccess.Entities;
 
 namespace Fulogi.DataAccess
 {
@@ -6,14 +7,21 @@ namespace Fulogi.DataAccess
     {
         public FulogiDbContext(DbContextOptions<FulogiDbContext> options) : base(options) {}
 
-        public DbSet<Entities.StationEntity> Stations { get; set; }
-        public DbSet<Entities.StorageEntity> Storages { get; set; }
-        public DbSet<Entities.DeliveryEntity> Deliveries { get; set; }
-        public DbSet<Entities.FuelRequestEntity> FuelRequests { get; set; }
+        public DbSet<StationEntity> Stations { get; set; }
+        public DbSet<StorageEntity> Storages { get; set; }
+        public DbSet<DeliveryEntity> Deliveries { get; set; }
+        public DbSet<FuelRequestEntity> FuelRequests { get; set; }
+        public DbSet<FuelRequestItemEntity> FuelRequestItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<FuelRequestEntity>()
+                .HasMany(r => r.Items)
+                .WithOne(i => i.FuelRequest)
+                .HasForeignKey(i => i.FuelRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

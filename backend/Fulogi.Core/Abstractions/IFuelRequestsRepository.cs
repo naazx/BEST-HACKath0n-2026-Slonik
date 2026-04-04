@@ -1,5 +1,6 @@
 ﻿using Fulogi.Core.Enums;
 using Fulogi.Core.Models;
+using System.Collections.Generic;
 
 namespace Fulogi.Core.Abstractions
 {
@@ -8,6 +9,12 @@ namespace Fulogi.Core.Abstractions
         Task<Guid> Create(FuelRequest fuelRequest);
         Task<Guid> Delete(Guid id);
         Task<List<FuelRequest>> Get();
-        Task<Guid> Update(Guid id, Guid stationId, double fuelAmount, Priority priority, Status status, DateTime createdAt);
+        Task<Guid> Update(
+            Guid id, 
+            Guid stationId, 
+            List<FuelRequest.RequestItemDto> items, 
+            Priority priority, 
+            Status status, 
+            DateTime createdAt);
     }
 }

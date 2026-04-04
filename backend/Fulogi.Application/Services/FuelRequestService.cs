@@ -1,6 +1,7 @@
 ﻿using Fulogi.Core.Abstractions;
 using Fulogi.Core.Enums;
 using Fulogi.Core.Models;
+using System.Collections.Generic;
 
 namespace Fulogi.Application.Services
 {
@@ -39,9 +40,11 @@ namespace Fulogi.Application.Services
             return await BuildFuelRequestDetails(requests);
         }
 
-        public async Task<Guid> UpdateFuelRequest(Guid id, Guid stationId, double fuelAmount, Priority priority, Status status, DateTime createdAt)
+        // ЗМІНЕНО: Замість double fuelAmount тепер List<FuelRequest.RequestItemDto> items
+        public async Task<Guid> UpdateFuelRequest(Guid id, Guid stationId, List<FuelRequest.RequestItemDto> items, Priority priority, Status status, DateTime createdAt)
         {
-            return await _fuelRequestsRepository.Update(id, stationId, fuelAmount, priority, status, createdAt);
+            // Передаємо items в репозиторій (репозиторій теж доведеться оновити)
+            return await _fuelRequestsRepository.Update(id, stationId, items, priority, status, createdAt);
         }
 
         public async Task<Guid> DeleteFuelRequest(Guid id)
@@ -54,9 +57,9 @@ namespace Fulogi.Application.Services
             var allRequests = await _fuelRequestsRepository.Get();
 
             var sortedRequests = allRequests
-        .OrderBy(x => (int)x.Status)
-        .ThenByDescending(x => x.Priority)
-        .ToList();
+                .OrderBy(x => (int)x.Status)
+                .ThenByDescending(x => x.Priority)
+                .ToList();
 
             return sortedRequests;
         }
@@ -99,7 +102,10 @@ namespace Fulogi.Application.Services
                     StorageId = storage?.Id,
                     StorageName = storage?.Name,
                     DeliveryId = delivery?.Id,
-                    FuelAmount = request.FuelAmount,
+                    
+                    // ЗМІНЕНО: Замінили FuelAmount = request.FuelAmount на масив Items
+                    Items = request.Items.ToList(), 
+                    
                     Priority = request.Priority,
                     Status = request.Status,
                     CreatedAt = request.CreatedAt,

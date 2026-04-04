@@ -2,6 +2,10 @@
 using Fulogi.Core.Models;
 using Fulogi.Cotracts;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Fulogi.Controllers
 {
@@ -20,6 +24,7 @@ namespace Fulogi.Controllers
         public async Task<ActionResult<List<FuelRequestResponse>>> GetAllFuelRequests()
         {
             var fuelRequests = await _fuelRequestService.GetAllFuelRequestDetails();
+            
             var response = fuelRequests.Select(f => new FuelRequestResponse(
                 f.Id,
                 f.StationId,
@@ -27,11 +32,11 @@ namespace Fulogi.Controllers
                 f.StorageId,
                 f.StorageName,
                 f.DeliveryId,
-                f.FuelAmount,
+                f.Items.Select(i => new FuelItemResponse(i.Id, i.FuelType, i.Amount)).ToList(), 
                 f.Priority,
                 f.Status,
                 f.CreatedAt,
-                f.DistanceKm));
+                f.DistanceKm)).ToList();
 
             return Ok(response);
         }
@@ -48,11 +53,11 @@ namespace Fulogi.Controllers
                 f.StorageId,
                 f.StorageName,
                 f.DeliveryId,
-                f.FuelAmount,
+                f.Items.Select(i => new FuelItemResponse(i.Id, i.FuelType, i.Amount)).ToList(),
                 f.Priority,
                 f.Status,
                 f.CreatedAt,
-                f.DistanceKm));
+                f.DistanceKm)).ToList();
 
             return Ok(response);
         }
@@ -60,30 +65,38 @@ namespace Fulogi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateFuelRequest([FromBody] FuelRequestRequest request)
         {
+            var domainItems = request.Items
+                .Select(i => new FuelRequest.RequestItemDto(i.FuelType, i.Amount))
+                .ToList();
+
             var (fuelRequest, errors) = FuelRequest.Create(
                 Guid.NewGuid(),
                 request.StationId,
-                request.FuelAmount,
-                request.Priority,
+                request.Priority, 
                 request.Status,
-                request.CreatedAt);
+                request.CreatedAt,
+                domainItems); 
 
             if (!string.IsNullOrEmpty(errors))
             {
                 return BadRequest(errors);
             }
 
-            var id = await _fuelRequestService.CreateFuelRequest(fuelRequest);
+            var id = await _fuelRequestService.CreateFuelRequest(fuelRequest!);
             return Ok(id);
         }
 
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateFuelRequest(Guid id, [FromBody] FuelRequestRequest request)
         {
+            var domainItems = request.Items
+                .Select(i => new FuelRequest.RequestItemDto(i.FuelType, i.Amount))
+                .ToList();
+
             var fuelRequestId = await _fuelRequestService.UpdateFuelRequest(
                 id,
                 request.StationId,
-                request.FuelAmount,
+                domainItems,
                 request.Priority,
                 request.Status,
                 request.CreatedAt);
