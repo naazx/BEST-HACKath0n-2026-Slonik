@@ -8,7 +8,7 @@ internal static class DevelopmentDatabaseBootstrapper
 {
     internal static async Task InitializeAsync(FulogiDbContext dbContext, string dbPath, bool isDevelopment)
     {
-        if (isDevelopment && await HasLegacySchemaAsync(dbPath))
+        if (await HasLegacySchemaAsync(dbPath))
         {
             await dbContext.Database.EnsureDeletedAsync();
         }
@@ -204,6 +204,7 @@ internal static class DevelopmentDatabaseBootstrapper
 
             var isCompleted = request.Status == Status.Done;
 
+
             deliveries.Add(new DeliveryEntity
             {
                 Id = Guid.NewGuid(),
@@ -260,6 +261,7 @@ internal static class DevelopmentDatabaseBootstrapper
             Amount = Math.Round(random.Next(8, 80) * 100.0, 2)
         }).ToList();
     }
+
     private static double Jitter(double value, Random random, double range)
     {
         return Math.Round(value + (random.NextDouble() * 2 - 1) * range, 6);

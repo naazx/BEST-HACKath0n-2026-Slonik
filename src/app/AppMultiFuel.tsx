@@ -245,7 +245,6 @@ export default function AppMultiFuel() {
   const [urgentRequestIds, setUrgentRequestIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showUrgentModal, setShowUrgentModal] = useState(false);
   const [showStationModal, setShowStationModal] = useState(false);
@@ -292,26 +291,6 @@ export default function AppMultiFuel() {
     })();
     return () => {
       cancelled = true;
-    };
-  }, [loadAll]);
-
-  useEffect(() => {
-    const handleDataChanged = () => {
-      void loadAll().catch(showErr);
-    };
-
-    const handleOnlineChange = () => {
-      setOnline(typeof navigator !== 'undefined' ? navigator.onLine : true);
-    };
-
-    window.addEventListener('fulogi:data-changed', handleDataChanged);
-    window.addEventListener('online', handleOnlineChange);
-    window.addEventListener('offline', handleOnlineChange);
-
-    return () => {
-      window.removeEventListener('fulogi:data-changed', handleDataChanged);
-      window.removeEventListener('online', handleOnlineChange);
-      window.removeEventListener('offline', handleOnlineChange);
     };
   }, [loadAll]);
 
@@ -550,13 +529,6 @@ export default function AppMultiFuel() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Fuel Delivery Management</h1>
             <p className="mt-1 text-gray-600">{loading ? 'Loading from API...' : 'Monitor and manage multi-fuel delivery requests.'}</p>
-            <div
-              className={`mt-2 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
-                online ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'
-              }`}
-            >
-              {online ? 'Online and syncing' : 'Offline mode enabled'}
-            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" disabled={busy} onClick={() => { setEditingStationId(null); setStationForm(defaultStationForm()); setShowStationModal(true); }} className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50"><Building2 className="h-5 w-5 text-gray-600" />New station</button>

@@ -191,7 +191,6 @@ export default function App() {
   const [deliveries, setDeliveries] = useState<DeliveryDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   const [showModal, setShowModal] = useState(false);
   const [showUrgentModal, setShowUrgentModal] = useState(false);
@@ -273,26 +272,6 @@ export default function App() {
       setResponseStorageId(null);
     }
   }, [selectedRequest?.id, selectedRequest?.status, selectedRequest?.stationId, selectedRequest?.fuelAmount, storages, stations]);
-
-  useEffect(() => {
-    const handleDataChanged = () => {
-      void loadAll().catch(showErr);
-    };
-
-    const handleOnlineChange = () => {
-      setOnline(navigator.onLine);
-    };
-
-    window.addEventListener('fulogi:data-changed', handleDataChanged);
-    window.addEventListener('online', handleOnlineChange);
-    window.addEventListener('offline', handleOnlineChange);
-
-    return () => {
-      window.removeEventListener('fulogi:data-changed', handleDataChanged);
-      window.removeEventListener('online', handleOnlineChange);
-      window.removeEventListener('offline', handleOnlineChange);
-    };
-  }, [loadAll]);
 
   useEffect(() => {
     if (stations.length === 0) return;
@@ -600,13 +579,6 @@ export default function App() {
             <p className="text-gray-600 mt-1">
               {loading ? 'Loading from API…' : 'Monitor and manage fuel transportation requests'}
             </p>
-            <div
-              className={`mt-2 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
-                online ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'
-              }`}
-            >
-              {online ? 'Online and syncing' : 'Offline mode enabled'}
-            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
