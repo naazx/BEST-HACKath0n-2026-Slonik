@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj": {}
+    "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj": {
+    "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj",
+        "projectUniqueName": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj",
         "projectName": "Fulogi.Application",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\obj\\",
+        "projectPath": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj",
+        "packagesPath": "C:\\Users\\Roman\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Roman\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -26,8 +30,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj"
+              "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
+                "projectPath": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj"
               }
             }
           }
@@ -341,17 +345,21 @@
         }
       }
     },
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
+    "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
+        "projectUniqueName": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
         "projectName": "Fulogi.Core",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\obj\\",
+        "projectPath": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
+        "packagesPath": "C:\\Users\\Roman\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Roman\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Roman\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
         ],
         "originalTargetFrameworks": [
           "net10.0"

@@ -1,0 +1,9 @@
+/* Leaflet default z-index can stack above app UI; keep maps inside their panels. */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 1;
+}
+
+.leaflet-control {
+  z-index: 2;
+}

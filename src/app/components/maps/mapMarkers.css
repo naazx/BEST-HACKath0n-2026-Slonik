@@ -1,0 +1,23 @@
+.fulogi-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.fulogi-marker-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid white;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+.fulogi-marker-dot--station {
+  background: #2563eb;
+}
+
+.fulogi-marker-dot--storage {
+  background: #ea580c;
+}
