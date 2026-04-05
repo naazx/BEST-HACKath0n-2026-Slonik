@@ -51,7 +51,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FulogiDbContext>();
-    await dbContext.Database.MigrateAsync();
+    await DevelopmentDatabaseBootstrapper.InitializeAsync(dbContext, dbPath, app.Environment.IsDevelopment());
 }
 
 if (app.Environment.IsDevelopment())
