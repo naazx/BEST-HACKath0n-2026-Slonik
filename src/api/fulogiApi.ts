@@ -69,8 +69,17 @@ async function canUseRemoteRead(): Promise<boolean> {
   return pendingMutations.length === 0;
 }
 
+export const FUEL_TYPES = ['A95', 'A92', 'Diesel', 'LPG'] as const;
+
+export type FuelType = (typeof FUEL_TYPES)[number];
 export type UiPriority = 'high' | 'medium' | 'low';
 export type UiRequestStatus = 'pending' | 'in_process' | 'delivered';
+
+export interface FuelItemDto {
+  id?: string;
+  fuelType: FuelType;
+  amount: number;
+}
 
 export interface StationDto {
   id: string;
@@ -84,7 +93,7 @@ export interface StorageDto {
   name: string;
   latitude: number;
   longitude: number;
-  fuelAvailable: number;
+  fuelItems: FuelItemDto[];
 }
 
 export interface FuelRequestDto {
@@ -94,7 +103,7 @@ export interface FuelRequestDto {
   storageId: string | null;
   storageName: string | null;
   deliveryId: string | null;
-  fuelAmount: number;
+  items: FuelItemDto[];
   priority: unknown;
   status: unknown;
   createdAt: string;
@@ -112,10 +121,28 @@ export interface DeliveryDto {
 
 export interface UrgentFuelRequestDto {
   id: string;
+}
+
+export interface StorageUpsertBody {
+  name: string;
+  latitude: number;
+  longitude: number;
+  fuelItems: FuelItemDto[];
+}
+
+export interface FuelRequestUpsertBody {
   stationId: string;
-  fuelAmount: number;
-  priority: unknown;
-  status: unknown;
+  priority: number;
+  status: number;
+  createdAt: string;
+  items: Array<Pick<FuelItemDto, 'fuelType' | 'amount'>>;
+}
+
+export interface DeliveryUpsertBody {
+  requestId: string;
+  storageId: string;
+  deliveredAmount: number;
+  status: 'Await' | 'InProgress' | 'Done';
   createdAt: string;
 }
 
@@ -161,27 +188,72 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return JSON.parse(text) as T;
 }
 
-export function dtoPriorityToUi(p: unknown): UiPriority {
-  if (p === 1 || p === 'low' || p === 'Low') return 'low';
-  if (p === 2 || p === 'medium' || p === 'Medium') return 'medium';
-  if (p === 3 || p === 'high' || p === 'High') return 'high';
+export function coerceFuelType(value: unknown): FuelType {
+  if (value === 1 || value === '1' || value === 'A95' || value === 'a95') return 'A95';
+  if (value === 2 || value === '2' || value === 'A92' || value === 'a92') return 'A92';
+  if (value === 3 || value === '3' || value === 'Diesel' || value === 'diesel') return 'Diesel';
+  if (value === 4 || value === '4' || value === 'LPG' || value === 'lpg') return 'LPG';
+  return 'A95';
+}
+
+function normalizeFuelItems(items: FuelItemDto[] | undefined): FuelItemDto[] {
+  const totals = new Map<FuelType, number>();
+
+  for (const item of items ?? []) {
+    const fuelType = coerceFuelType(item.fuelType);
+    const amount = Number(item.amount) || 0;
+    if (amount <= 0) {
+      continue;
+    }
+
+    totals.set(fuelType, (totals.get(fuelType) ?? 0) + amount);
+  }
+
+  return FUEL_TYPES.flatMap(fuelType => {
+    const amount = totals.get(fuelType) ?? 0;
+    return amount > 0 ? [{ fuelType, amount }] : [];
+  });
+}
+
+export function dtoPriorityToUi(value: unknown): UiPriority {
+  if (value === 1 || value === 'low' || value === 'Low') return 'low';
+  if (value === 2 || value === 'medium' || value === 'Medium') return 'medium';
+  if (value === 3 || value === 'high' || value === 'High') return 'high';
   return 'medium';
 }
 
-export function uiPriorityToApi(p: UiPriority): number {
-  return p === 'low' ? 1 : p === 'medium' ? 2 : 3;
+export function uiPriorityToApi(priority: UiPriority): number {
+  return priority === 'low' ? 1 : priority === 'medium' ? 2 : 3;
 }
 
-export function dtoStatusToUi(s: unknown): UiRequestStatus {
-  if (s === 1 || s === 'await' || s === 'Await') return 'pending';
-  if (s === 2 || s === 'inProgress' || s === 'InProgress') return 'in_process';
-  if (s === 3 || s === 'done' || s === 'Done') return 'delivered';
+export function dtoStatusToUi(value: unknown): UiRequestStatus {
+  if (
+    value === 1 ||
+    value === 'await' ||
+    value === 'Await' ||
+    value === 'pending' ||
+    value === 'Pending'
+  ) {
+    return 'pending';
+  }
+  if (
+    value === 2 ||
+    value === 'inProgress' ||
+    value === 'InProgress' ||
+    value === 'in_process' ||
+    value === 'In_Process'
+  ) {
+    return 'in_process';
+  }
+  if (value === 3 || value === 'done' || value === 'Done' || value === 'delivered') {
+    return 'delivered';
+  }
   return 'pending';
 }
 
-export function uiStatusToApi(s: UiRequestStatus): number {
-  if (s === 'pending') return 1;
-  if (s === 'in_process') return 2;
+export function uiStatusToApi(status: UiRequestStatus): number {
+  if (status === 'pending') return 1;
+  if (status === 'in_process') return 2;
   return 3;
 }
 
@@ -191,9 +263,15 @@ function buildStationRecord(id: string, body: { name: string; latitude: number; 
 
 function buildStorageRecord(
   id: string,
-  body: { name: string; latitude: number; longitude: number; fuelAvailable: number },
+  body: StorageUpsertBody,
 ): StorageDto {
-  return { id, ...body };
+  return {
+    id,
+    name: body.name,
+    latitude: body.latitude,
+    longitude: body.longitude,
+    fuelItems: normalizeFuelItems(body.fuelItems),
+  };
 }
 
 async function cacheStations(stations: StationDto[]): Promise<void> {
@@ -201,11 +279,17 @@ async function cacheStations(stations: StationDto[]): Promise<void> {
 }
 
 async function cacheStorages(storages: StorageDto[]): Promise<void> {
-  await replaceAllRecords(ENTITY_STORE_NAMES.storage, storages);
+  await replaceAllRecords(ENTITY_STORE_NAMES.storage, storages.map(storage => ({
+    ...storage,
+    fuelItems: normalizeFuelItems(storage.fuelItems),
+  })));
 }
 
 async function cacheFuelRequests(fuelRequests: FuelRequestDto[]): Promise<void> {
-  await replaceAllRecords(ENTITY_STORE_NAMES.fuelRequest, fuelRequests);
+  await replaceAllRecords(ENTITY_STORE_NAMES.fuelRequest, fuelRequests.map(request => ({
+    ...request,
+    items: normalizeFuelItems(request.items),
+  })));
 }
 
 async function cacheDeliveries(deliveries: DeliveryDto[]): Promise<void> {
@@ -253,7 +337,7 @@ async function createOptimisticStorage(body: {
   name: string;
   latitude: number;
   longitude: number;
-  fuelAvailable: number;
+  fuelItems: FuelItemDto[];
 }): Promise<StorageDto> {
   const record = buildStorageRecord(createLocalId(), body);
   await upsertRecord(ENTITY_STORE_NAMES.storage, record);
@@ -263,10 +347,10 @@ async function createOptimisticStorage(body: {
 
 async function createOptimisticFuelRequest(body: {
   stationId: string;
-  fuelAmount: number;
   priority: number;
   status: number;
   createdAt: string;
+  items: Array<Pick<FuelItemDto, 'fuelType' | 'amount'>>;
 }): Promise<FuelRequestDto> {
   const stations = await readAllRecords<StationDto>(ENTITY_STORE_NAMES.station);
   const stationName = stationFromCache(stations, body.stationId)?.name ?? 'Unknown station';
@@ -277,7 +361,7 @@ async function createOptimisticFuelRequest(body: {
     storageId: null,
     storageName: null,
     deliveryId: null,
-    fuelAmount: body.fuelAmount,
+    items: normalizeFuelItems(body.items),
     priority: body.priority,
     status: body.status,
     createdAt: body.createdAt,
@@ -292,7 +376,7 @@ async function createOptimisticDelivery(body: {
   requestId: string;
   storageId: string;
   deliveredAmount: number;
-  status: string;
+  status: 'Await' | 'InProgress' | 'Done';
   createdAt: string;
 }): Promise<DeliveryDto> {
   const record: DeliveryDto = {
@@ -508,34 +592,35 @@ export async function getStorages(): Promise<StorageDto[]> {
   }
 }
 
-export function createStorage(body: {
-  name: string;
-  latitude: number;
-  longitude: number;
-  fuelAvailable: number;
-}): Promise<string> {
+export function createStorage(body: StorageUpsertBody): Promise<string> {
   return handleCreateMutation({
     entity: 'storage',
-    body,
+    body: {
+      ...body,
+      fuelItems: normalizeFuelItems(body.fuelItems),
+    },
     remotePath: '/api/Storage',
     buildRecord: buildStorageRecord,
     optimisticCreate: createOptimisticStorage,
   });
 }
 
-export function updateStorage(
-  id: string,
-  body: { name: string; latitude: number; longitude: number; fuelAvailable: number },
-): Promise<string> {
+export function updateStorage(id: string, body: StorageUpsertBody): Promise<string> {
   return handleUpdateMutation({
     entity: 'storage',
     id,
-    body,
+    body: {
+      ...body,
+      fuelItems: normalizeFuelItems(body.fuelItems),
+    },
     remotePath: targetId => `/api/Storage/${targetId}`,
     mergeRecord: (current, targetId, payload) => ({
       ...(current ?? { id: targetId }),
       id: targetId,
-      ...payload,
+      name: payload.name,
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      fuelItems: normalizeFuelItems(payload.fuelItems),
     }),
   });
 }
@@ -551,7 +636,10 @@ export function deleteStorage(id: string): Promise<string> {
 // --- Fuel requests
 
 function mapFuelRequests(fuelRequests: FuelRequestDto[]): FuelRequestDto[] {
-  return fuelRequests;
+  return fuelRequests.map(request => ({
+    ...request,
+    items: normalizeFuelItems(request.items),
+  }));
 }
 
 export async function getFuelRequestsSorted(): Promise<FuelRequestDto[]> {
@@ -561,23 +649,21 @@ export async function getFuelRequestsSorted(): Promise<FuelRequestDto[]> {
 
   try {
     const fuelRequests = await fetchFuelRequestsRemote();
-    await cacheFuelRequests(mapFuelRequests(fuelRequests));
-    return fuelRequests;
+    const mappedFuelRequests = mapFuelRequests(fuelRequests);
+    await cacheFuelRequests(mappedFuelRequests);
+    return mappedFuelRequests;
   } catch {
     return readAllRecords<FuelRequestDto>(ENTITY_STORE_NAMES.fuelRequest);
   }
 }
 
-export function createFuelRequest(body: {
-  stationId: string;
-  fuelAmount: number;
-  priority: number;
-  status: number;
-  createdAt: string;
-}): Promise<string> {
+export function createFuelRequest(body: FuelRequestUpsertBody): Promise<string> {
   return handleCreateMutation({
     entity: 'fuelRequest',
-    body,
+    body: {
+      ...body,
+      items: normalizeFuelItems(body.items),
+    },
     remotePath: '/api/FuelRequest',
     buildRecord: async (id, payload) => {
       const stationName = await getCachedStationName(payload.stationId);
@@ -588,7 +674,7 @@ export function createFuelRequest(body: {
         storageId: null,
         storageName: null,
         deliveryId: null,
-        fuelAmount: payload.fuelAmount,
+        items: normalizeFuelItems(payload.items),
         priority: payload.priority,
         status: payload.status,
         createdAt: payload.createdAt,
@@ -601,18 +687,15 @@ export function createFuelRequest(body: {
 
 export function updateFuelRequest(
   id: string,
-  body: {
-    stationId: string;
-    fuelAmount: number;
-    priority: number;
-    status: number;
-    createdAt: string;
-  },
+  body: FuelRequestUpsertBody,
 ): Promise<string> {
   return handleUpdateMutation({
     entity: 'fuelRequest',
     id,
-    body,
+    body: {
+      ...body,
+      items: normalizeFuelItems(body.items),
+    },
     remotePath: targetId => `/api/FuelRequest/${targetId}`,
     mergeRecord: async (current, targetId, payload) => {
       const stationName = await getCachedStationName(payload.stationId);
@@ -623,7 +706,7 @@ export function updateFuelRequest(
         storageId: null,
         storageName: null,
         deliveryId: null,
-        fuelAmount: payload.fuelAmount,
+        items: normalizeFuelItems(payload.items),
         priority: payload.priority,
         status: payload.status,
         createdAt: payload.createdAt,
@@ -635,7 +718,7 @@ export function updateFuelRequest(
         id: targetId,
         stationId: payload.stationId,
         stationName,
-        fuelAmount: payload.fuelAmount,
+        items: normalizeFuelItems(payload.items),
         priority: payload.priority,
         status: payload.status,
         createdAt: payload.createdAt,
@@ -657,14 +740,7 @@ export async function getUrgentFuelRequests(): Promise<UrgentFuelRequestDto[]> {
     const cached = await readAllRecords<FuelRequestDto>(ENTITY_STORE_NAMES.fuelRequest);
     return cached
       .filter(request => dtoPriorityToUi(request.priority) === 'high' && dtoStatusToUi(request.status) === 'pending')
-      .map(request => ({
-        id: request.id,
-        stationId: request.stationId,
-        fuelAmount: request.fuelAmount,
-        priority: request.priority,
-        status: request.status,
-        createdAt: request.createdAt,
-      }));
+      .map(request => ({ id: request.id }));
   }
 
   try {
@@ -673,14 +749,7 @@ export async function getUrgentFuelRequests(): Promise<UrgentFuelRequestDto[]> {
     const cached = await readAllRecords<FuelRequestDto>(ENTITY_STORE_NAMES.fuelRequest);
     return cached
       .filter(request => dtoPriorityToUi(request.priority) === 'high' && dtoStatusToUi(request.status) === 'pending')
-      .map(request => ({
-        id: request.id,
-        stationId: request.stationId,
-        fuelAmount: request.fuelAmount,
-        priority: request.priority,
-        status: request.status,
-        createdAt: request.createdAt,
-      }));
+      .map(request => ({ id: request.id }));
   }
 }
 
@@ -700,13 +769,7 @@ export async function getDeliveries(): Promise<DeliveryDto[]> {
   }
 }
 
-export function createDelivery(body: {
-  requestId: string;
-  storageId: string;
-  deliveredAmount: number;
-  status: string;
-  createdAt: string;
-}): Promise<string> {
+export function createDelivery(body: DeliveryUpsertBody): Promise<string> {
   return handleCreateMutation({
     entity: 'delivery',
     body,
@@ -716,16 +779,7 @@ export function createDelivery(body: {
   });
 }
 
-export function updateDelivery(
-  id: string,
-  body: {
-    requestId: string;
-    storageId: string;
-    deliveredAmount: number;
-    status: string;
-    createdAt: string;
-  },
-): Promise<string> {
+export function updateDelivery(id: string, body: DeliveryUpsertBody): Promise<string> {
   return handleUpdateMutation({
     entity: 'delivery',
     id,

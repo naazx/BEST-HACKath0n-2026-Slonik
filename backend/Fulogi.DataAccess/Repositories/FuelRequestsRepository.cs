@@ -3,6 +3,10 @@ using Fulogi.Core.Enums;
 using Fulogi.Core.Models;
 using Fulogi.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using DataPriority = Fulogi.DataAccess.Enums.Priority;
 using DataStatus = Fulogi.DataAccess.Enums.Status;
 
@@ -32,10 +36,16 @@ namespace Fulogi.DataAccess.Repositories
             {
                 Id = fuelRequest.Id,
                 StationId = fuelRequest.StationId,
-                FuelAmount = fuelRequest.FuelAmount,
                 Priority = (DataPriority)fuelRequest.Priority,
                 Status = (DataStatus)fuelRequest.Status,
-                CreatedAt = fuelRequest.CreatedAt
+                CreatedAt = fuelRequest.CreatedAt,
+                Items = fuelRequest.Items.Select(i => new FuelRequestItemEntity
+                {
+                    Id = Guid.NewGuid(),
+                    FuelRequestId = fuelRequest.Id,
+                    FuelType = i.FuelType,
+                    Amount = i.Amount
+                }).ToList()
             };
 
             await _context.FuelRequests.AddAsync(entity);
@@ -46,20 +56,24 @@ namespace Fulogi.DataAccess.Repositories
 
         public async Task<List<FuelRequest>> Get()
         {
-            var entities = await _context.FuelRequests.AsNoTracking().ToListAsync();
+            var entities = await _context.FuelRequests
+                .Include(f => f.Items)
+                .AsNoTracking()
+                .ToListAsync();
 
             return entities
                 .Select(f => FuelRequest.Create(
                     f.Id,
                     f.StationId,
-                    f.FuelAmount,
                     (Priority)f.Priority,
                     (Status)f.Status,
-                    f.CreatedAt).FuelRequest)
+                    f.CreatedAt,
+                    f.Items.Select(i => new FuelRequest.RequestItemDto(i.FuelType, i.Amount)).ToList()
+                ).FuelRequest!)
                 .ToList();
         }
 
-        public async Task<Guid> Update(Guid id, Guid stationId, double fuelAmount, Priority priority, Status status, DateTime createdAt)
+        public async Task<Guid> Update(Guid id, Guid stationId, List<FuelRequest.RequestItemDto> items, Priority priority, Status status, DateTime createdAt)
         {
             var fuelRequestExists = await _context.FuelRequests
                 .AsNoTracking()
@@ -79,14 +93,38 @@ namespace Fulogi.DataAccess.Repositories
                 throw new InvalidOperationException("Cannot update fuel request because station does not exist.");
             }
 
-            await _context.FuelRequests
-                .Where(f => f.Id == id)
-                .ExecuteUpdateAsync(f => f
-                    .SetProperty(b => b.StationId, _ => stationId)
-                    .SetProperty(b => b.FuelAmount, _ => fuelAmount)
-                    .SetProperty(b => b.Priority, _ => (DataPriority)priority)
-                    .SetProperty(b => b.Status, _ => (DataStatus)status)
-                    .SetProperty(b => b.CreatedAt, _ => createdAt));
+            var entity = await _context.FuelRequests
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (entity == null)
+            {
+                return id;
+            }
+
+            entity.StationId = stationId;
+            entity.Priority = (DataPriority)priority;
+            entity.Status = (DataStatus)status;
+            entity.CreatedAt = createdAt;
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await _context.FuelRequestItems
+                .Where(item => item.FuelRequestId == id)
+                .ExecuteDeleteAsync();
+
+            var itemEntities = items.Select(item => new FuelRequestItemEntity
+                {
+                    Id = Guid.NewGuid(),
+                    FuelRequestId = id,
+                    FuelType = item.FuelType,
+                    Amount = item.Amount
+                })
+                .ToList();
+
+            await _context.FuelRequestItems.AddRangeAsync(itemEntities);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             return id;
         }

@@ -7,6 +7,6 @@ namespace Fulogi.Core.Abstractions
         Task<Guid> CreateStorage(Storage storage);
         Task<Guid> DeleteStorage(Guid id);
         Task<List<Storage>> GetAllStorages();
-        Task<Guid> UpdateStorage(Guid id, string name, double latitude, double longitude, double fuelAvailable);
+        Task<Guid> UpdateStorage(Guid id, string name, double latitude, double longitude, List<StorageFuelItem> fuelItems);
     }
 }

@@ -104,6 +104,7 @@ namespace Fulogi.DataAccess.Migrations
                 name: "IX_Delivery_StorageId",
                 table: "Delivery",
                 column: "StorageId");
+
         }
 
         /// <inheritdoc />
