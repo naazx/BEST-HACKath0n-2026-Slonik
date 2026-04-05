@@ -1,25 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj": {}
+    "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
+    "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.Core/Fulogi.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
+        "projectUniqueName": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.Core/Fulogi.Core.csproj",
         "projectName": "Fulogi.Core",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\obj\\",
+        "projectPath": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.Core/Fulogi.Core.csproj",
+        "packagesPath": "/Users/nazardydyn/.nuget/packages/",
+        "outputPath": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/nazardydyn/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -59,7 +60,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -337,30 +338,31 @@
         }
       }
     },
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj": {
+    "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj",
+        "projectUniqueName": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj",
         "projectName": "Fulogi.DataAccess",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\obj\\",
+        "projectPath": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj",
+        "packagesPath": "/Users/nazardydyn/.nuget/packages/",
+        "outputPath": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.DataAccess/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/nazardydyn/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj"
+              "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.Core/Fulogi.Core.csproj": {
+                "projectPath": "/Users/nazardydyn/Downloads/BEST-HACKath0n-2026-Slonik-frontend2/backend/Fulogi.Core/Fulogi.Core.csproj"
               }
             }
           }
@@ -412,7 +414,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

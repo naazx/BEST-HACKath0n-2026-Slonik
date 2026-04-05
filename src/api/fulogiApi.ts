@@ -1,7 +1,5 @@
-/** Use Vite proxy in dev (`/api` → backend). Override with `VITE_API_BASE` if needed. */
-const BASE = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE
-  ? String(import.meta.env.VITE_API_BASE).replace(/\/$/, '')
-  : '';
+/** Always use the deployed backend API base. */
+const BASE = 'https://fulogi.onrender.com';
 
 export type UiPriority = 'high' | 'medium' | 'low';
 export type UiRequestStatus = 'pending' | 'in_process' | 'delivered';
