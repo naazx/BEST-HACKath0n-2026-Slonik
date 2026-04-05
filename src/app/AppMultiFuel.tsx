@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, Building2, Fuel, MapPin, Pencil, Plus, Trash2, Truck, Warehouse, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Building2,
+  Eye,
+  Fuel,
+  MapPin,
+  Pencil,
+  Plus,
+  Trash2,
+  Truck,
+  Warehouse,
+  X,
+} from 'lucide-react';
 import {
   FUEL_TYPES,
   coerceFuelType,
@@ -32,6 +44,12 @@ import {
   updateStation,
   updateStorage,
 } from '../api/fulogiApi';
+import {
+  isWithinLvivOblast,
+  LocationPickerMap,
+  LocationPreviewMap,
+  type MapLocation,
+} from './components/maps/LocationMap';
 
 type Priority = UiPriority;
 type RequestStatus = UiRequestStatus;
@@ -56,6 +74,9 @@ interface PendingDraft {
   priority: Priority;
   fuelFields: FuelFields;
 }
+type LocationDetails =
+  | { kind: 'station'; item: Station }
+  | { kind: 'storage'; item: Storage };
 interface StorageRecommendation {
   storage: Storage;
   distanceKm: number;
@@ -237,6 +258,27 @@ function FuelFieldGrid({ values, onChange }: { values: FuelFields; onChange: (ne
     </div>
   );
 }
+
+function parseCoordinateValue(value: string): number | null {
+  if (!value.trim()) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseDraftLocation(latitude: string, longitude: string): MapLocation | null {
+  const parsedLatitude = parseCoordinateValue(latitude);
+  const parsedLongitude = parseCoordinateValue(longitude);
+
+  if (parsedLatitude == null || parsedLongitude == null) {
+    return null;
+  }
+
+  return {
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+  };
+}
+
 export default function AppMultiFuel() {
   const [stations, setStations] = useState<Station[]>([]);
   const [storages, setStorages] = useState<Storage[]>([]);
@@ -259,6 +301,10 @@ export default function AppMultiFuel() {
   const [storageForm, setStorageForm] = useState(defaultStorageForm);
   const [editingStationId, setEditingStationId] = useState<string | null>(null);
   const [editingStorageId, setEditingStorageId] = useState<string | null>(null);
+  const [selectedLocationDetails, setSelectedLocationDetails] = useState<LocationDetails | null>(null);
+
+  const stationDraftLocation = parseDraftLocation(stationForm.latitude, stationForm.longitude);
+  const storageDraftLocation = parseDraftLocation(storageForm.latitude, storageForm.longitude);
 
   const loadAll = useCallback(async () => {
     const [stationList, storageList, deliveryList, fuelList, urgentFuelList] = await Promise.all([
@@ -300,6 +346,20 @@ export default function AppMultiFuel() {
   }, [stations]);
 
   useEffect(() => {
+    setSelectedLocationDetails(previous => {
+      if (!previous) return null;
+
+      if (previous.kind === 'station') {
+        const nextStation = stations.find(station => station.id === previous.item.id);
+        return nextStation ? { kind: 'station', item: nextStation } : null;
+      }
+
+      const nextStorage = storages.find(storage => storage.id === previous.item.id);
+      return nextStorage ? { kind: 'storage', item: nextStorage } : null;
+    });
+  }, [stations, storages]);
+
+  useEffect(() => {
     if (selectedRequest?.status === 'pending') {
       setSelectedRequestDraft({ priority: selectedRequest.priority, fuelFields: fuelItemsToFields(selectedRequest.items) });
       return;
@@ -333,6 +393,18 @@ export default function AppMultiFuel() {
   };
   const urgentRequests = requests.filter(request => urgentRequestIds.includes(request.id));
 
+  const openNewStation = () => {
+    setEditingStationId(null);
+    setStationForm(defaultStationForm());
+    setShowStationModal(true);
+  };
+
+  const openNewStorage = () => {
+    setEditingStorageId(null);
+    setStorageForm(defaultStorageForm());
+    setShowStorageModal(true);
+  };
+
   const openEditStation = (station: Station) => {
     setEditingStationId(station.id);
     setStationForm({ name: station.name, latitude: String(station.latitude), longitude: String(station.longitude) });
@@ -344,10 +416,22 @@ export default function AppMultiFuel() {
     setShowStorageModal(true);
   };
 
+  const openStationDetails = (station: Station) => {
+    setSelectedLocationDetails({ kind: 'station', item: station });
+  };
+
+  const openStorageDetails = (storage: Storage) => {
+    setSelectedLocationDetails({ kind: 'storage', item: storage });
+  };
+
   const saveStation = async () => {
     const latitude = Number(stationForm.latitude);
     const longitude = Number(stationForm.longitude);
     if (!stationForm.name.trim() || Number.isNaN(latitude) || Number.isNaN(longitude)) return;
+    if (!isWithinLvivOblast({ latitude, longitude })) {
+      window.alert('Choose station coordinates within Lviv Oblast.');
+      return;
+    }
     try {
       setBusy(true);
       const body = { name: stationForm.name.trim(), latitude, longitude };
@@ -369,6 +453,10 @@ export default function AppMultiFuel() {
     const longitude = Number(storageForm.longitude);
     const fuelItems = fieldsToFuelItems(storageForm.fuelFields);
     if (!storageForm.name.trim() || Number.isNaN(latitude) || Number.isNaN(longitude)) return;
+    if (!isWithinLvivOblast({ latitude, longitude })) {
+      window.alert('Choose storage coordinates within Lviv Oblast.');
+      return;
+    }
     if (fuelItems.length === 0) {
       window.alert('Add at least one fuel type to the storage.');
       return;
@@ -522,6 +610,14 @@ export default function AppMultiFuel() {
     }
   };
 
+  const selectedLocationMap =
+    selectedLocationDetails == null
+      ? null
+      : {
+          latitude: selectedLocationDetails.item.latitude,
+          longitude: selectedLocationDetails.item.longitude,
+        };
+
   return (
     <div className="size-full overflow-auto bg-gray-50">
       <div className="mx-auto max-w-7xl space-y-6 p-6">
@@ -531,8 +627,8 @@ export default function AppMultiFuel() {
             <p className="mt-1 text-gray-600">{loading ? 'Loading from API...' : 'Monitor and manage multi-fuel delivery requests.'}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" disabled={busy} onClick={() => { setEditingStationId(null); setStationForm(defaultStationForm()); setShowStationModal(true); }} className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50"><Building2 className="h-5 w-5 text-gray-600" />New station</button>
-            <button type="button" disabled={busy} onClick={() => { setEditingStorageId(null); setStorageForm(defaultStorageForm()); setShowStorageModal(true); }} className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50"><Warehouse className="h-5 w-5 text-gray-600" />New storage</button>
+            <button type="button" disabled={busy} onClick={openNewStation} className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50"><Building2 className="h-5 w-5 text-gray-600" />New station</button>
+            <button type="button" disabled={busy} onClick={openNewStorage} className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50"><Warehouse className="h-5 w-5 text-gray-600" />New storage</button>
             <button type="button" disabled={busy || stations.length === 0} onClick={() => setShowRequestModal(true)} className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><Plus className="h-5 w-5" />New request</button>
           </div>
         </div>
@@ -593,15 +689,66 @@ export default function AppMultiFuel() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Storage facilities</h2>
               <div className="overflow-x-auto rounded-lg bg-white shadow">
-                <table className="min-w-[760px] w-full">
-                  <thead className="bg-gray-100"><tr><th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Name</th><th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Total fuel</th><th className="min-w-[280px] px-4 py-3 text-left text-sm font-semibold text-gray-900">Fuel mix</th><th className="w-32 whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-gray-900">Actions</th></tr></thead>
+                <table className="min-w-[820px] w-full">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Total fuel</th>
+                      <th className="min-w-[280px] px-4 py-3 text-left text-sm font-semibold text-gray-900">Fuel mix</th>
+                      <th className="w-36 whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-gray-900">Actions</th>
+                    </tr>
+                  </thead>
                   <tbody className="divide-y divide-gray-200">
                     {storages.map(storage => (
                       <tr key={storage.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3"><div className="font-medium text-gray-900">{storage.name}</div><div className="text-xs text-gray-500">{storage.latitude.toFixed(4)}, {storage.longitude.toFixed(4)}</div></td>
-                        <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><Fuel className="h-4 w-4 text-blue-600" /><span className="font-semibold text-gray-900">{sumFuelItems(storage.fuelItems).toLocaleString()}</span></div></td>
-                        <td className="px-4 py-3"><FuelBadges items={storage.fuelItems} emptyLabel="No stored fuel." /></td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right"><div className="flex justify-end gap-1"><button type="button" disabled={busy} onClick={() => openEditStorage(storage)} className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50" title="Edit storage"><Pencil className="h-4 w-4" /></button><button type="button" disabled={busy} onClick={() => void deleteStorageLocal(storage.id)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50" title="Delete storage"><Trash2 className="h-4 w-4" /></button></div></td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900">{storage.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {storage.latitude.toFixed(4)}, {storage.longitude.toFixed(4)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Fuel className="h-4 w-4 text-blue-600" />
+                            <span className="font-semibold text-gray-900">
+                              {sumFuelItems(storage.fuelItems).toLocaleString()}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <FuelBadges items={storage.fuelItems} emptyLabel="No stored fuel." />
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => openStorageDetails(storage)}
+                              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+                              title="View storage details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => openEditStorage(storage)}
+                              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                              title="Edit storage"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void deleteStorageLocal(storage.id)}
+                              className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                              title="Delete storage"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -613,12 +760,52 @@ export default function AppMultiFuel() {
               <h2 className="text-xl font-semibold text-gray-900">Stations</h2>
               <div className="overflow-hidden rounded-lg bg-white shadow">
                 <table className="w-full">
-                  <thead className="bg-gray-100"><tr><th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Name</th><th className="w-28 px-4 py-3 text-right text-sm font-semibold text-gray-900">Actions</th></tr></thead>
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+                      <th className="w-36 px-4 py-3 text-right text-sm font-semibold text-gray-900">Actions</th>
+                    </tr>
+                  </thead>
                   <tbody className="divide-y divide-gray-200">
                     {stations.map(station => (
                       <tr key={station.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3"><div className="font-medium text-gray-900">{station.name}</div><div className="text-xs text-gray-500">{station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}</div></td>
-                        <td className="px-4 py-3 text-right"><div className="flex justify-end gap-1"><button type="button" disabled={busy} onClick={() => openEditStation(station)} className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50" title="Edit station"><Pencil className="h-4 w-4" /></button><button type="button" disabled={busy} onClick={() => void deleteStationLocal(station.id)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50" title="Delete station"><Trash2 className="h-4 w-4" /></button></div></td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900">{station.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => openStationDetails(station)}
+                              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+                              title="View station details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => openEditStation(station)}
+                              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                              title="Edit station"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void deleteStationLocal(station.id)}
+                              className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                              title="Delete station"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -639,12 +826,275 @@ export default function AppMultiFuel() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-lg bg-white p-6"><div className="flex items-center justify-between"><h3 className="text-xl font-semibold text-gray-900">Request details</h3><div className="flex items-center gap-2"><button type="button" disabled={busy} onClick={() => void deleteRequestLocal(selectedRequest.id)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50" title="Delete request"><Trash2 className="h-4 w-4" /></button><button type="button" onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600"><X className="h-6 w-6" /></button></div></div><div className="space-y-3"><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">Request ID</span><span className="max-w-[220px] truncate font-mono text-xs font-semibold">{selectedRequest.id}</span></div><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">Status</span><span className={`rounded-full border px-2 py-1 text-xs font-medium ${statusBadgeStyles[selectedRequest.status]}`}>{statusLabels[selectedRequest.status]}</span></div><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">Priority</span>{selectedRequest.status === 'pending' && selectedRequestDraft ? <div className="flex flex-wrap justify-end gap-1">{(['low', 'medium', 'high'] as Priority[]).map(priority => <button key={priority} type="button" disabled={busy} onClick={() => setSelectedRequestDraft(previous => previous ? { ...previous, priority } : previous)} className={`rounded-lg border px-2 py-1 text-xs font-medium ${selectedRequestDraft.priority === priority ? priorityColors[priority] : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'} disabled:opacity-50`}>{priority}</button>)}</div> : <span className={`rounded-full px-3 py-1 text-sm font-medium ${priorityColors[selectedRequest.priority]}`}>{selectedRequest.priority.toUpperCase()}</span>}</div><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">To</span><span className="text-right font-semibold">{selectedRequest.stationName || 'Unknown station'}</span></div>{selectedRequest.status !== 'pending' && <><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">From</span><span className="text-right font-semibold">{selectedRequest.storageName ?? 'Unknown storage'}</span></div><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">Distance</span><span className="font-semibold">{selectedRequest.distanceKm == null ? '-' : `${selectedRequest.distanceKm.toFixed(2)} km`}</span></div></>}<div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">Total fuel</span><span className="font-semibold">{sumFuelItems(selectedRequestItems).toLocaleString()} L</span></div><div className="border-b py-2"><div className="mb-2 text-gray-600">Fuel mix</div>{selectedRequest.status === 'pending' && selectedRequestDraft ? <FuelFieldGrid values={selectedRequestDraft.fuelFields} onChange={fuelFields => setSelectedRequestDraft(previous => previous ? { ...previous, fuelFields } : previous)} /> : <FuelBadges items={selectedRequest.items} />}</div><div className="flex items-center justify-between border-b py-2"><span className="text-gray-600">Created</span><span className="font-semibold">{formatRequestDateTime(selectedRequest.createdAt)}</span></div></div>{selectedRequest.status === 'pending' && selectedRequestDraft && <><button type="button" disabled={busy} onClick={() => void persistPendingUpdate()} className="w-full rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 font-medium text-blue-900 hover:bg-blue-100 disabled:opacity-50">Save request changes</button><div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50/80 p-4"><p className="text-sm font-medium text-amber-950">Dispatch response</p><p className="text-xs text-amber-900/80">Choose the storage that will supply this delivery, then confirm to move the request to in process.</p>{recommendedResponseStorage && <div className="rounded-lg border border-amber-200/80 bg-white/70 p-3"><div className="text-xs font-medium uppercase tracking-wide text-amber-900/80">Recommended storage</div><div className="mt-1 font-medium text-gray-900">{recommendedResponseStorage.storage.name}</div><div className="text-sm text-gray-600">{recommendedResponseStorage.distanceKm.toFixed(1)} km away</div><FuelBadges items={recommendedResponseStorage.storage.fuelItems} emptyLabel="No stored fuel." />{!recommendedResponseStorage.canFulfill && <div className="mt-1 text-xs text-red-600">Missing or insufficient: {formatFuelTypeList(recommendedResponseStorage.missingFuelTypes)}.</div>}</div>}<label className="block text-sm font-medium text-gray-800">Delivering storage</label><select value={responseStorageId ?? recommendedResponseStorage?.storage.id ?? storages[0]?.id ?? ''} onChange={event => setResponseStorageId(event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">{responseStorageRecommendations.map(({ storage, distanceKm, canFulfill, missingFuelTypes }, index) => <option key={storage.id} value={storage.id}>{storage.name} | {distanceKm.toFixed(1)} km{index === 0 ? ' | recommended' : ''}{canFulfill ? '' : ` | shortage: ${formatFuelTypeList(missingFuelTypes)}`}</option>)}</select><button type="button" disabled={busy} onClick={() => void dispatchFromPending()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"><Truck className="h-4 w-4" />Confirm dispatch</button></div></>}{selectedRequest.status === 'in_process' && <button type="button" disabled={busy} onClick={() => void markDelivered()} className="w-full rounded-lg bg-green-600 px-4 py-3 font-medium text-white hover:bg-green-700 disabled:opacity-50">Mark as delivered</button>}{selectedRequest.status === 'delivered' && <p className="py-2 text-center text-sm text-gray-600">This delivery is complete.</p>}</div></div>
         )}
 
+        {selectedLocationDetails && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-lg bg-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {selectedLocationDetails.kind === 'station' ? 'Station details' : 'Storage details'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Coordinate preview is limited to Lviv Oblast.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedLocationDetails(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <MapPin className="h-4 w-4" />
+                  {selectedLocationDetails.item.name}
+                </div>
+                <div className="mt-2 text-sm text-slate-600">
+                  {selectedLocationDetails.item.latitude.toFixed(6)},{' '}
+                  {selectedLocationDetails.item.longitude.toFixed(6)}
+                </div>
+                {selectedLocationDetails.kind === 'storage' && (
+                  <div className="mt-3 space-y-2">
+                    <div className="text-sm font-medium text-slate-700">
+                      Total fuel: {sumFuelItems(selectedLocationDetails.item.fuelItems).toLocaleString()} L
+                    </div>
+                    <FuelBadges
+                      items={selectedLocationDetails.item.fuelItems}
+                      emptyLabel="No stored fuel."
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-800">Location</div>
+                <LocationPreviewMap className="h-[240px]" location={selectedLocationMap} />
+              </div>
+            </div>
+          </div>
+        )}
+
         {showStationModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-md space-y-4 rounded-lg bg-white p-6"><div className="flex items-center justify-between"><h3 className="text-xl font-semibold text-gray-900">{editingStationId ? 'Edit station' : 'New station'}</h3><button type="button" onClick={() => { setShowStationModal(false); setEditingStationId(null); setStationForm(defaultStationForm()); }} className="text-gray-400 hover:text-gray-600"><X className="h-6 w-6" /></button></div><div className="space-y-3"><label className="block"><span className="mb-1 block text-sm font-medium text-gray-700">Name</span><input value={stationForm.name} onChange={event => setStationForm(previous => ({ ...previous, name: event.target.value }))} className="w-full rounded-lg border border-gray-300 px-3 py-2" /></label><div className="grid grid-cols-2 gap-3"><label className="block"><span className="mb-1 block text-sm font-medium text-gray-700">Latitude</span><input value={stationForm.latitude} onChange={event => setStationForm(previous => ({ ...previous, latitude: event.target.value }))} className="w-full rounded-lg border border-gray-300 px-3 py-2" /></label><label className="block"><span className="mb-1 block text-sm font-medium text-gray-700">Longitude</span><input value={stationForm.longitude} onChange={event => setStationForm(previous => ({ ...previous, longitude: event.target.value }))} className="w-full rounded-lg border border-gray-300 px-3 py-2" /></label></div></div><button type="button" disabled={busy} onClick={() => void saveStation()} className="w-full rounded-lg bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 disabled:opacity-50">Save</button></div></div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-xl space-y-4 rounded-lg bg-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {editingStationId ? 'Edit station' : 'New station'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Click the map to place the station within Lviv Oblast.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowStationModal(false);
+                    setEditingStationId(null);
+                    setStationForm(defaultStationForm());
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-gray-700">Name</span>
+                  <input
+                    value={stationForm.name}
+                    onChange={event =>
+                      setStationForm(previous => ({ ...previous, name: event.target.value }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                  />
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="mb-1 block text-sm font-medium text-gray-700">Latitude</span>
+                    <input
+                      value={stationForm.latitude}
+                      onChange={event =>
+                        setStationForm(previous => ({
+                          ...previous,
+                          latitude: event.target.value,
+                        }))
+                      }
+                      placeholder="49.839684"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-sm font-medium text-gray-700">Longitude</span>
+                    <input
+                      value={stationForm.longitude}
+                      onChange={event =>
+                        setStationForm(previous => ({
+                          ...previous,
+                          longitude: event.target.value,
+                        }))
+                      }
+                      placeholder="24.029716"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    />
+                  </label>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-gray-700">Location</div>
+                  <LocationPickerMap
+                    className="h-[240px]"
+                    location={stationDraftLocation}
+                    onSelect={location =>
+                      setStationForm(previous => ({
+                        ...previous,
+                        latitude: String(location.latitude),
+                        longitude: String(location.longitude),
+                      }))
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    Visible and selectable area is restricted to Lviv Oblast bounds.
+                  </p>
+                  {stationDraftLocation != null && !isWithinLvivOblast(stationDraftLocation) && (
+                    <p className="text-xs text-red-600">
+                      Coordinates must stay inside the configured Lviv Oblast bounds.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void saveStation()}
+                className="w-full rounded-lg bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                Save
+              </button>
+            </div>
+          </div>
         )}
 
         {showStorageModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-lg space-y-4 rounded-lg bg-white p-6"><div className="flex items-center justify-between"><h3 className="text-xl font-semibold text-gray-900">{editingStorageId ? 'Edit storage' : 'New storage'}</h3><button type="button" onClick={() => { setShowStorageModal(false); setEditingStorageId(null); setStorageForm(defaultStorageForm()); }} className="text-gray-400 hover:text-gray-600"><X className="h-6 w-6" /></button></div><div className="space-y-3"><label className="block"><span className="mb-1 block text-sm font-medium text-gray-700">Name</span><input value={storageForm.name} onChange={event => setStorageForm(previous => ({ ...previous, name: event.target.value }))} className="w-full rounded-lg border border-gray-300 px-3 py-2" /></label><div className="grid grid-cols-2 gap-3"><label className="block"><span className="mb-1 block text-sm font-medium text-gray-700">Latitude</span><input value={storageForm.latitude} onChange={event => setStorageForm(previous => ({ ...previous, latitude: event.target.value }))} className="w-full rounded-lg border border-gray-300 px-3 py-2" /></label><label className="block"><span className="mb-1 block text-sm font-medium text-gray-700">Longitude</span><input value={storageForm.longitude} onChange={event => setStorageForm(previous => ({ ...previous, longitude: event.target.value }))} className="w-full rounded-lg border border-gray-300 px-3 py-2" /></label></div><div><span className="mb-2 block text-sm font-medium text-gray-700">Stored fuel mix</span><FuelFieldGrid values={storageForm.fuelFields} onChange={fuelFields => setStorageForm(previous => ({ ...previous, fuelFields }))} /></div></div><button type="button" disabled={busy} onClick={() => void saveStorage()} className="w-full rounded-lg bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 disabled:opacity-50">Save</button></div></div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-2xl space-y-4 rounded-lg bg-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {editingStorageId ? 'Edit storage' : 'New storage'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Click the map to place the storage within Lviv Oblast.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowStorageModal(false);
+                    setEditingStorageId(null);
+                    setStorageForm(defaultStorageForm());
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="space-y-3">
+                  <label className="block">
+                    <span className="mb-1 block text-sm font-medium text-gray-700">Name</span>
+                    <input
+                      value={storageForm.name}
+                      onChange={event =>
+                        setStorageForm(previous => ({ ...previous, name: event.target.value }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    />
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="block">
+                      <span className="mb-1 block text-sm font-medium text-gray-700">Latitude</span>
+                      <input
+                        value={storageForm.latitude}
+                        onChange={event =>
+                          setStorageForm(previous => ({
+                            ...previous,
+                            latitude: event.target.value,
+                          }))
+                        }
+                        placeholder="49.839684"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-sm font-medium text-gray-700">Longitude</span>
+                      <input
+                        value={storageForm.longitude}
+                        onChange={event =>
+                          setStorageForm(previous => ({
+                            ...previous,
+                            longitude: event.target.value,
+                          }))
+                        }
+                        placeholder="24.029716"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <span className="mb-2 block text-sm font-medium text-gray-700">Stored fuel mix</span>
+                    <FuelFieldGrid
+                      values={storageForm.fuelFields}
+                      onChange={fuelFields =>
+                        setStorageForm(previous => ({ ...previous, fuelFields }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-gray-700">Location</div>
+                  <LocationPickerMap
+                    className="h-[240px]"
+                    location={storageDraftLocation}
+                    onSelect={location =>
+                      setStorageForm(previous => ({
+                        ...previous,
+                        latitude: String(location.latitude),
+                        longitude: String(location.longitude),
+                      }))
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    Visible and selectable area is restricted to Lviv Oblast bounds.
+                  </p>
+                  {storageDraftLocation != null && !isWithinLvivOblast(storageDraftLocation) && (
+                    <p className="text-xs text-red-600">
+                      Coordinates must stay inside the configured Lviv Oblast bounds.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void saveStorage()}
+                className="w-full rounded-lg bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                Save
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
