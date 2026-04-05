@@ -592,7 +592,6 @@ export async function getStorages(): Promise<StorageDto[]> {
   }
 }
 
-<<<<<<< HEAD
 export function createStorage(body: {
   name: string;
   latitude: number;
@@ -629,14 +628,6 @@ export function updateStorage(id: string, body: StorageUpsertBody): Promise<stri
       fuelItems: normalizeFuelItems(payload.fuelItems),
     }),
   });
-=======
-export function createStorage(body: StorageUpsertBody): Promise<string> {
-  return apiJson<string>('/api/Storage', { method: 'POST', body: JSON.stringify(body) });
-}
-
-export function updateStorage(id: string, body: StorageUpsertBody): Promise<string> {
-  return apiJson<string>(`/api/Storage/${id}`, { method: 'PUT', body: JSON.stringify(body) });
->>>>>>> origin/main
 }
 
 export function deleteStorage(id: string): Promise<string> {
@@ -671,7 +662,6 @@ export async function getFuelRequestsSorted(): Promise<FuelRequestDto[]> {
   }
 }
 
-<<<<<<< HEAD
 export function createFuelRequest(body: {
   stationId: string;
   fuelAmount: number;
@@ -746,14 +736,6 @@ export function updateFuelRequest(
       };
     },
   });
-=======
-export function createFuelRequest(body: FuelRequestUpsertBody): Promise<string> {
-  return apiJson<string>('/api/FuelRequest', { method: 'POST', body: JSON.stringify(body) });
-}
-
-export function updateFuelRequest(id: string, body: FuelRequestUpsertBody): Promise<string> {
-  return apiJson<string>(`/api/FuelRequest/${id}`, { method: 'PUT', body: JSON.stringify(body) });
->>>>>>> origin/main
 }
 
 export function deleteFuelRequest(id: string): Promise<string> {
@@ -798,7 +780,6 @@ export async function getDeliveries(): Promise<DeliveryDto[]> {
   }
 }
 
-<<<<<<< HEAD
 export function createDelivery(body: {
   requestId: string;
   storageId: string;
@@ -831,14 +812,6 @@ export function updateDelivery(id: string, body: DeliveryUpsertBody): Promise<st
       createdAt: payload.createdAt,
     }),
   });
-=======
-export function createDelivery(body: DeliveryUpsertBody): Promise<string> {
-  return apiJson<string>('/api/Delivery', { method: 'POST', body: JSON.stringify(body) });
-}
-
-export function updateDelivery(id: string, body: DeliveryUpsertBody): Promise<string> {
-  return apiJson<string>(`/api/Delivery/${id}`, { method: 'PUT', body: JSON.stringify(body) });
->>>>>>> origin/main
 }
 
 scheduleOfflineSync();
