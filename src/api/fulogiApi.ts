@@ -3,6 +3,16 @@ const BASE = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BAS
   ? String(import.meta.env.VITE_API_BASE).replace(/\/$/, '')
   : '';
 
+const runningOnLocalhost =
+  typeof window !== 'undefined' &&
+  /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+
+if (!BASE && !runningOnLocalhost && typeof console !== 'undefined') {
+  console.warn(
+    '[fulogiApi] VITE_API_BASE is not set. Production requests will use the current origin.',
+  );
+}
+
 export const FUEL_TYPES = ['A95', 'A92', 'Diesel', 'LPG'] as const;
 
 export type FuelType = (typeof FUEL_TYPES)[number];
