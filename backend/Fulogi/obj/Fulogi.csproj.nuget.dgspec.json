@@ -1,33 +1,34 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi\\Fulogi.csproj": {}
+    "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi/Fulogi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj": {
+    "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Application/Fulogi.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj",
+        "projectUniqueName": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Application/Fulogi.Application.csproj",
         "projectName": "Fulogi.Application",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\obj\\",
+        "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Application/Fulogi.Application.csproj",
+        "packagesPath": "/home/illia/.nuget/packages/",
+        "outputPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Application/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/illia/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "/usr/lib64/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj"
+              "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj": {
+                "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj"
               }
             }
           }
@@ -42,7 +43,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net10.0": {
@@ -63,7 +64,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/10.0.104/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -341,22 +342,23 @@
         }
       }
     },
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
+    "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
+        "projectUniqueName": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj",
         "projectName": "Fulogi.Core",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\obj\\",
+        "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj",
+        "packagesPath": "/home/illia/.nuget/packages/",
+        "outputPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/illia/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "/usr/lib64/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -375,7 +377,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net10.0": {
@@ -396,7 +398,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/10.0.104/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -674,30 +676,31 @@
         }
       }
     },
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj": {
+    "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj",
+        "projectUniqueName": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj",
         "projectName": "Fulogi.DataAccess",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\obj\\",
+        "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj",
+        "packagesPath": "/home/illia/.nuget/packages/",
+        "outputPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.DataAccess/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/illia/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "/usr/lib64/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj"
+              "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj": {
+                "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj"
               }
             }
           }
@@ -712,7 +715,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net10.0": {
@@ -749,7 +752,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/10.0.104/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -1027,36 +1030,37 @@
         }
       }
     },
-    "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi\\Fulogi.csproj": {
+    "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi/Fulogi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi\\Fulogi.csproj",
+        "projectUniqueName": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi/Fulogi.csproj",
         "projectName": "Fulogi",
-        "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi\\Fulogi.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi\\obj\\",
+        "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi/Fulogi.csproj",
+        "packagesPath": "/home/illia/.nuget/packages/",
+        "outputPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/illia/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "/usr/lib64/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Application\\Fulogi.Application.csproj"
+              "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Application/Fulogi.Application.csproj": {
+                "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Application/Fulogi.Application.csproj"
               },
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.Core\\Fulogi.Core.csproj"
+              "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj": {
+                "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.Core/Fulogi.Core.csproj"
               },
-              "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj": {
-                "projectPath": "C:\\Users\\user\\BEST-HACKath0n-2026-Slonik\\backend\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj"
+              "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj": {
+                "projectPath": "/home/illia/Desktop/hackathon/BEST-HACKath0n-2026-Slonik/backend/Fulogi.DataAccess/Fulogi.DataAccess.csproj"
               }
             }
           }
@@ -1071,7 +1075,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net10.0": {
@@ -1127,7 +1131,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/10.0.104/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

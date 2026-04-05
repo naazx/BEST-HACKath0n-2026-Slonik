@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Fulogi.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+998b4d190f0a1f262539a348b82c0488fc0b5f5f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db388c28568bb0f25c8aaced5d3d0dc1393dac4c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Fulogi.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Fulogi.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
