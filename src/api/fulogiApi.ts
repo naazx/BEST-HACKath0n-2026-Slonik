@@ -3,8 +3,17 @@ const BASE = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BAS
   ? String(import.meta.env.VITE_API_BASE).replace(/\/$/, '')
   : '';
 
+export const FUEL_TYPES = ['A95', 'A92', 'Diesel', 'LPG'] as const;
+
+export type FuelType = (typeof FUEL_TYPES)[number];
 export type UiPriority = 'high' | 'medium' | 'low';
 export type UiRequestStatus = 'pending' | 'in_process' | 'delivered';
+
+export interface FuelItemDto {
+  id?: string;
+  fuelType: FuelType;
+  amount: number;
+}
 
 export interface StationDto {
   id: string;
@@ -18,7 +27,7 @@ export interface StorageDto {
   name: string;
   latitude: number;
   longitude: number;
-  fuelAvailable: number;
+  fuelItems: FuelItemDto[];
 }
 
 export interface FuelRequestDto {
@@ -28,7 +37,7 @@ export interface FuelRequestDto {
   storageId: string | null;
   storageName: string | null;
   deliveryId: string | null;
-  fuelAmount: number;
+  items: FuelItemDto[];
   priority: unknown;
   status: unknown;
   createdAt: string;
@@ -46,10 +55,28 @@ export interface DeliveryDto {
 
 export interface UrgentFuelRequestDto {
   id: string;
+}
+
+export interface StorageUpsertBody {
+  name: string;
+  latitude: number;
+  longitude: number;
+  fuelItems: FuelItemDto[];
+}
+
+export interface FuelRequestUpsertBody {
   stationId: string;
-  fuelAmount: number;
-  priority: unknown;
-  status: unknown;
+  priority: number;
+  status: number;
+  createdAt: string;
+  items: Array<Pick<FuelItemDto, 'fuelType' | 'amount'>>;
+}
+
+export interface DeliveryUpsertBody {
+  requestId: string;
+  storageId: string;
+  deliveredAmount: number;
+  status: 'Await' | 'InProgress' | 'Done';
   createdAt: string;
 }
 
@@ -83,27 +110,53 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return JSON.parse(text) as T;
 }
 
-export function dtoPriorityToUi(p: unknown): UiPriority {
-  if (p === 1 || p === 'low' || p === 'Low') return 'low';
-  if (p === 2 || p === 'medium' || p === 'Medium') return 'medium';
-  if (p === 3 || p === 'high' || p === 'High') return 'high';
+export function coerceFuelType(value: unknown): FuelType {
+  if (value === 1 || value === '1' || value === 'A95' || value === 'a95') return 'A95';
+  if (value === 2 || value === '2' || value === 'A92' || value === 'a92') return 'A92';
+  if (value === 3 || value === '3' || value === 'Diesel' || value === 'diesel') return 'Diesel';
+  if (value === 4 || value === '4' || value === 'LPG' || value === 'lpg') return 'LPG';
+  return 'A95';
+}
+
+export function dtoPriorityToUi(value: unknown): UiPriority {
+  if (value === 1 || value === 'low' || value === 'Low') return 'low';
+  if (value === 2 || value === 'medium' || value === 'Medium') return 'medium';
+  if (value === 3 || value === 'high' || value === 'High') return 'high';
   return 'medium';
 }
 
-export function uiPriorityToApi(p: UiPriority): number {
-  return p === 'low' ? 1 : p === 'medium' ? 2 : 3;
+export function uiPriorityToApi(priority: UiPriority): number {
+  return priority === 'low' ? 1 : priority === 'medium' ? 2 : 3;
 }
 
-export function dtoStatusToUi(s: unknown): UiRequestStatus {
-  if (s === 1 || s === 'await' || s === 'Await') return 'pending';
-  if (s === 2 || s === 'inProgress' || s === 'InProgress') return 'in_process';
-  if (s === 3 || s === 'done' || s === 'Done') return 'delivered';
+export function dtoStatusToUi(value: unknown): UiRequestStatus {
+  if (
+    value === 1 ||
+    value === 'await' ||
+    value === 'Await' ||
+    value === 'pending' ||
+    value === 'Pending'
+  ) {
+    return 'pending';
+  }
+  if (
+    value === 2 ||
+    value === 'inProgress' ||
+    value === 'InProgress' ||
+    value === 'in_process' ||
+    value === 'In_Process'
+  ) {
+    return 'in_process';
+  }
+  if (value === 3 || value === 'done' || value === 'Done' || value === 'delivered') {
+    return 'delivered';
+  }
   return 'pending';
 }
 
-export function uiStatusToApi(s: UiRequestStatus): number {
-  if (s === 'pending') return 1;
-  if (s === 'in_process') return 2;
+export function uiStatusToApi(status: UiRequestStatus): number {
+  if (status === 'pending') return 1;
+  if (status === 'in_process') return 2;
   return 3;
 }
 
@@ -134,19 +187,11 @@ export function getStorages(): Promise<StorageDto[]> {
   return apiJson<StorageDto[]>('/api/Storage');
 }
 
-export function createStorage(body: {
-  name: string;
-  latitude: number;
-  longitude: number;
-  fuelAvailable: number;
-}): Promise<string> {
+export function createStorage(body: StorageUpsertBody): Promise<string> {
   return apiJson<string>('/api/Storage', { method: 'POST', body: JSON.stringify(body) });
 }
 
-export function updateStorage(
-  id: string,
-  body: { name: string; latitude: number; longitude: number; fuelAvailable: number },
-): Promise<string> {
+export function updateStorage(id: string, body: StorageUpsertBody): Promise<string> {
   return apiJson<string>(`/api/Storage/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 }
 
@@ -160,26 +205,11 @@ export function getFuelRequestsSorted(): Promise<FuelRequestDto[]> {
   return apiJson<FuelRequestDto[]>('/api/FuelRequest/sorted-by-priority-and-status');
 }
 
-export function createFuelRequest(body: {
-  stationId: string;
-  fuelAmount: number;
-  priority: number;
-  status: number;
-  createdAt: string;
-}): Promise<string> {
+export function createFuelRequest(body: FuelRequestUpsertBody): Promise<string> {
   return apiJson<string>('/api/FuelRequest', { method: 'POST', body: JSON.stringify(body) });
 }
 
-export function updateFuelRequest(
-  id: string,
-  body: {
-    stationId: string;
-    fuelAmount: number;
-    priority: number;
-    status: number;
-    createdAt: string;
-  },
-): Promise<string> {
+export function updateFuelRequest(id: string, body: FuelRequestUpsertBody): Promise<string> {
   return apiJson<string>(`/api/FuelRequest/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 }
 
@@ -197,25 +227,10 @@ export function getDeliveries(): Promise<DeliveryDto[]> {
   return apiJson<DeliveryDto[]>('/api/Delivery');
 }
 
-export function createDelivery(body: {
-  requestId: string;
-  storageId: string;
-  deliveredAmount: number;
-  status: string;
-  createdAt: string;
-}): Promise<string> {
+export function createDelivery(body: DeliveryUpsertBody): Promise<string> {
   return apiJson<string>('/api/Delivery', { method: 'POST', body: JSON.stringify(body) });
 }
 
-export function updateDelivery(
-  id: string,
-  body: {
-    requestId: string;
-    storageId: string;
-    deliveredAmount: number;
-    status: string;
-    createdAt: string;
-  },
-): Promise<string> {
+export function updateDelivery(id: string, body: DeliveryUpsertBody): Promise<string> {
   return apiJson<string>(`/api/Delivery/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 }

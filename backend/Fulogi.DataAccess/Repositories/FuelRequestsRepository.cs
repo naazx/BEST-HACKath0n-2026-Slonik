@@ -42,6 +42,7 @@ namespace Fulogi.DataAccess.Repositories
                 Items = fuelRequest.Items.Select(i => new FuelRequestItemEntity
                 {
                     Id = Guid.NewGuid(),
+                    FuelRequestId = fuelRequest.Id,
                     FuelType = i.FuelType,
                     Amount = i.Amount
                 }).ToList()
@@ -93,7 +94,6 @@ namespace Fulogi.DataAccess.Repositories
             }
 
             var entity = await _context.FuelRequests
-                .Include(f => f.Items)
                 .FirstOrDefaultAsync(f => f.Id == id);
 
             if (entity == null)
@@ -106,19 +106,25 @@ namespace Fulogi.DataAccess.Repositories
             entity.Status = (DataStatus)status;
             entity.CreatedAt = createdAt;
 
-            entity.Items.Clear();
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-            foreach (var item in items)
-            {
-                entity.Items.Add(new FuelRequestItemEntity
+            await _context.FuelRequestItems
+                .Where(item => item.FuelRequestId == id)
+                .ExecuteDeleteAsync();
+
+            var itemEntities = items.Select(item => new FuelRequestItemEntity
                 {
                     Id = Guid.NewGuid(),
+                    FuelRequestId = id,
                     FuelType = item.FuelType,
                     Amount = item.Amount
-                });
-            }
+                })
+                .ToList();
+
+            await _context.FuelRequestItems.AddRangeAsync(itemEntities);
 
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             return id;
         }

@@ -34,9 +34,8 @@ namespace Fulogi.Application.Services
 
             var totalRequestedAmount = itemDtos.Sum(i => i.Amount);
 
-            // 2. Шукаємо склад
             var storages = await _storagesRepository.Get();
-            var storage = PickStorageWithCapacity(storages, totalRequestedAmount);
+            var storage = PickStorageWithCapacity(storages, itemDtos);
 
             // 3. Визначаємо статус
             var status = storage is not null ? Status.InProgress : Status.Await;
@@ -190,11 +189,18 @@ namespace Fulogi.Application.Services
                 ?? requestDeliveries.OrderByDescending(d => d.CreatedAt).First();
         }
 
-        private static Storage? PickStorageWithCapacity(IReadOnlyList<Storage> storages, double totalAmount)
+        private static Storage? PickStorageWithCapacity(IReadOnlyList<Storage> storages, IReadOnlyCollection<FuelRequest.RequestItemDto> requestedItems)
         {
-            if (totalAmount <= 0) return null;
+            if (requestedItems.Count == 0)
+            {
+                return null;
+            }
+
             return storages
-                .Where(s => s.FuelItems != null && s.FuelItems.Sum(fi => fi.Amount) >= totalAmount)
+                .Where(s => requestedItems.All(requestedItem =>
+                    s.FuelItems.Any(storageItem =>
+                        storageItem.FuelType == requestedItem.FuelType &&
+                        storageItem.Amount >= requestedItem.Amount)))
                 .OrderByDescending(s => s.FuelItems.Sum(fi => fi.Amount))
                 .FirstOrDefault();
         }

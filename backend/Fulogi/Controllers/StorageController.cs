@@ -66,8 +66,9 @@ namespace Fulogi.Controllers
                 FuelType = f.FuelType, 
                 Amount = f.Amount 
             }).ToList();
-
-            var storageId = await _storageService.UpdateStorage(
+            try
+            {
+                var storageId = await _storageService.UpdateStorage(
                 id,
                 request.Name,
                 request.Latitude,

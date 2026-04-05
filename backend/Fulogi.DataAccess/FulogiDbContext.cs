@@ -36,7 +36,6 @@ namespace Fulogi.DataAccess
                 entity.Property(x => x.Name).IsRequired();
                 entity.Property(x => x.Latitude).IsRequired();
                 entity.Property(x => x.Longitude).IsRequired();
-                entity.Property(x => x.FuelAvailable).IsRequired();
             });
 
             modelBuilder.Entity<Entities.FuelRequestEntity>(entity =>
@@ -44,7 +43,6 @@ namespace Fulogi.DataAccess
                 entity.ToTable("FuelRequest");
                 entity.HasKey(x => x.Id);
                 entity.HasIndex(x => x.StationId);
-                entity.Property(x => x.FuelAmount).IsRequired();
                 entity.Property(x => x.Priority).IsRequired();
                 entity.Property(x => x.Status).IsRequired();
                 entity.Property(x => x.CreatedAt).IsRequired();
@@ -52,6 +50,15 @@ namespace Fulogi.DataAccess
                     .WithMany()
                     .HasForeignKey(x => x.StationId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Entities.FuelRequestItemEntity>(entity =>
+            {
+                entity.ToTable("FuelRequestItem");
+                entity.HasKey(x => x.Id);
+                entity.HasIndex(x => x.FuelRequestId);
+                entity.Property(x => x.FuelType).IsRequired();
+                entity.Property(x => x.Amount).IsRequired();
             });
 
             modelBuilder.Entity<Entities.DeliveryEntity>(entity =>
@@ -71,6 +78,15 @@ namespace Fulogi.DataAccess
                     .WithMany()
                     .HasForeignKey(x => x.StorageId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Entities.StorageFuelItemEntity>(entity =>
+            {
+                entity.ToTable("StorageFuelItem");
+                entity.HasKey(x => x.Id);
+                entity.HasIndex(x => x.StorageId);
+                entity.Property(x => x.FuelType).IsRequired();
+                entity.Property(x => x.Amount).IsRequired();
             });
 
             modelBuilder.Entity<FuelRequestEntity>()
