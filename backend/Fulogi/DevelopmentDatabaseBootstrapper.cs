@@ -8,7 +8,11 @@ internal static class DevelopmentDatabaseBootstrapper
 {
     internal static async Task InitializeAsync(FulogiDbContext dbContext, string dbPath, bool isDevelopment)
     {
+<<<<<<< HEAD
         if (isDevelopment && await HasLegacySchemaAsync(dbPath))
+=======
+        if (await HasLegacySchemaAsync(dbPath))
+>>>>>>> origin/main
         {
             await dbContext.Database.EnsureDeletedAsync();
         }
@@ -47,7 +51,18 @@ internal static class DevelopmentDatabaseBootstrapper
             return true;
         }
 
+<<<<<<< HEAD
         return await ColumnExistsAsync(connection, "Delivery", "WarehouseId")
+=======
+        if (!tables.Contains("FuelRequestItem") || !tables.Contains("StorageFuelItem"))
+        {
+            return true;
+        }
+
+        return await ColumnExistsAsync(connection, "Delivery", "WarehouseId")
+            || await ColumnExistsAsync(connection, "Storage", "FuelAvailable")
+            || await ColumnExistsAsync(connection, "FuelRequest", "FuelAmount")
+>>>>>>> origin/main
             || await ColumnTypeMatchesAsync(connection, "FuelRequest", "Id", "INTEGER")
             || await ColumnTypeMatchesAsync(connection, "FuelRequest", "Priority", "TEXT")
             || await ColumnTypeMatchesAsync(connection, "FuelRequest", "Status", "TEXT");
@@ -151,6 +166,7 @@ internal static class DevelopmentDatabaseBootstrapper
 
         return Enumerable.Range(0, count)
             .Select(index => templates[index % templates.Length])
+<<<<<<< HEAD
             .Select(template => new StorageEntity
             {
                 Id = Guid.NewGuid(),
@@ -158,6 +174,19 @@ internal static class DevelopmentDatabaseBootstrapper
                 Latitude = Jitter(template.Latitude, random, 0.02),
                 Longitude = Jitter(template.Longitude, random, 0.02),
                 FuelAvailable = Math.Round(template.FuelAvailable + random.Next(-6000, 6001), 2)
+=======
+            .Select(template =>
+            {
+                var storageId = Guid.NewGuid();
+                return new StorageEntity
+                {
+                    Id = storageId,
+                    Name = template.Name,
+                    Latitude = Jitter(template.Latitude, random, 0.02),
+                    Longitude = Jitter(template.Longitude, random, 0.02),
+                    FuelItems = GenerateStorageFuelItems(storageId, template.FuelAvailable, random)
+                };
+>>>>>>> origin/main
             })
             .ToList();
     }
@@ -172,7 +201,11 @@ internal static class DevelopmentDatabaseBootstrapper
             {
                 Id = Guid.NewGuid(),
                 StationId = stations[random.Next(stations.Count)].Id,
+<<<<<<< HEAD
                 FuelAmount = random.Next(800, 12000),
+=======
+                Items = GenerateFuelRequestItems(random),
+>>>>>>> origin/main
                 Priority = priorities[random.Next(priorities.Length)],
                 Status = statuses[random.Next(statuses.Length)],
                 CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 14)).AddMinutes(-random.Next(0, 1440))
@@ -192,16 +225,24 @@ internal static class DevelopmentDatabaseBootstrapper
             }
 
             var isCompleted = request.Status == Status.Done;
+<<<<<<< HEAD
             var deliveredAmount = isCompleted
                 ? request.FuelAmount
                 : Math.Max(200, request.FuelAmount * (0.4 + random.NextDouble() * 0.6));
+=======
+
+>>>>>>> origin/main
 
             deliveries.Add(new DeliveryEntity
             {
                 Id = Guid.NewGuid(),
                 RequestId = request.Id,
                 StorageId = storages[random.Next(storages.Count)].Id,
+<<<<<<< HEAD
                 DeliveredAmount = deliveredAmount,
+=======
+                DeliveredAmount = Math.Round(request.Items.Sum(item => item.Amount), 2),
+>>>>>>> origin/main
                 Status = isCompleted ? Status.Done : RandomDeliveryStatus(random),
                 CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 10)).AddMinutes(-random.Next(0, 1440))
             });
@@ -210,6 +251,52 @@ internal static class DevelopmentDatabaseBootstrapper
         return deliveries;
     }
 
+<<<<<<< HEAD
+=======
+    private static List<StorageFuelItemEntity> GenerateStorageFuelItems(Guid storageId, double totalFuelAvailable, Random random)
+    {
+        var fuelTypes = Enum.GetValues<Fulogi.Core.Enums.FuelType>();
+        var remainingAmount = totalFuelAvailable;
+        var items = new List<StorageFuelItemEntity>(fuelTypes.Length);
+
+        for (var index = 0; index < fuelTypes.Length; index++)
+        {
+            var isLast = index == fuelTypes.Length - 1;
+            var amount = isLast
+                ? remainingAmount
+                : Math.Round(totalFuelAvailable * (0.2 + random.NextDouble() * 0.25), 2);
+
+            amount = Math.Max(1500, Math.Min(amount, remainingAmount - (fuelTypes.Length - index - 1) * 1500));
+            remainingAmount -= amount;
+
+            items.Add(new StorageFuelItemEntity
+            {
+                Id = Guid.NewGuid(),
+                StorageId = storageId,
+                FuelType = fuelTypes[index],
+                Amount = Math.Round(amount, 2)
+            });
+        }
+
+        return items;
+    }
+
+    private static List<FuelRequestItemEntity> GenerateFuelRequestItems(Random random)
+    {
+        var availableFuelTypes = Enum.GetValues<Fulogi.Core.Enums.FuelType>()
+            .OrderBy(_ => random.Next())
+            .Take(random.Next(1, 3))
+            .ToList();
+
+        return availableFuelTypes.Select(fuelType => new FuelRequestItemEntity
+        {
+            Id = Guid.NewGuid(),
+            FuelType = fuelType,
+            Amount = Math.Round(random.Next(8, 80) * 100.0, 2)
+        }).ToList();
+    }
+
+>>>>>>> origin/main
     private static double Jitter(double value, Random random, double range)
     {
         return Math.Round(value + (random.NextDouble() * 2 - 1) * range, 6);

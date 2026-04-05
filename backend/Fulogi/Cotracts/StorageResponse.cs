@@ -5,5 +5,5 @@
         string Name,
         double Latitude,
         double Longitude,
-        double FuelAvailable);
+        List<StorageFuelItemDto> FuelItems);
 }

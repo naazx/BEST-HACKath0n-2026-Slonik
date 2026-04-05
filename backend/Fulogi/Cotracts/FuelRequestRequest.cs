@@ -1,11 +1,14 @@
 ﻿using Fulogi.Core.Enums;
 
-namespace Fulogi.Cotracts
+namespace Fulogi.Cotracts 
 {
+    public record FuelItemRequest(FuelType FuelType, double Amount);
+
     public record FuelRequestRequest(
         Guid StationId,
-        double FuelAmount,
         Priority Priority,
         Status Status,
-        DateTime CreatedAt);
+        DateTime CreatedAt,
+        List<FuelItemRequest> Items
+    );
 }

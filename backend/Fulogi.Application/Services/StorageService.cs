@@ -22,9 +22,9 @@ namespace Fulogi.Application.Services
             return await _storagesRepository.Get();
         }
 
-        public async Task<Guid> UpdateStorage(Guid id, string name, double latitude, double longitude, double fuelAvailable)
+        public async Task<Guid> UpdateStorage(Guid id, string name, double latitude, double longitude, List<StorageFuelItem> fuelItems)
         {
-            return await _storagesRepository.Update(id, name, latitude, longitude, fuelAvailable);
+            return await _storagesRepository.Update(id, name, latitude, longitude, fuelItems);
         }
 
         public async Task<Guid> DeleteStorage(Guid id)

@@ -18,6 +18,8 @@ namespace Fulogi.Application.Services
         public async Task<Guid> CreateDelivery(Delivery delivery)
         {
             await EnsureStorageHasEnoughFuel(delivery.StorageId, delivery.DeliveredAmount);
+            await DeductFuelFromStorage(delivery.StorageId, delivery.DeliveredAmount);
+
             return await _deliveriesRepository.Create(delivery);
         }
 
@@ -29,6 +31,8 @@ namespace Fulogi.Application.Services
         public async Task<Guid> UpdateDelivery(Guid id, Guid requestId, Guid storageId, double deliveredAmount, Status status, DateTime createdAt)
         {
             await EnsureStorageHasEnoughFuel(storageId, deliveredAmount);
+            await DeductFuelFromStorage(storageId, deliveredAmount);
+
             return await _deliveriesRepository.Update(id, requestId, storageId, deliveredAmount, status, createdAt);
         }
 
@@ -47,11 +51,45 @@ namespace Fulogi.Application.Services
                 throw new InvalidOperationException("Selected storage was not found.");
             }
 
-            if (storage.FuelAvailable < requiredAmount)
+            var totalAvailable = storage.FuelItems.Sum(f => f.Amount);
+
+            if (totalAvailable < requiredAmount)
             {
                 throw new InvalidOperationException(
-                    $"Not enough fuel in storage \"{storage.Name}\". Available: {storage.FuelAvailable:N0} L, required: {requiredAmount:N0} L.");
+                    $"Not enough fuel in storage \"{storage.Name}\". Available: {totalAvailable:N0} L, required: {requiredAmount:N0} L.");
             }
+        }
+
+        private async Task DeductFuelFromStorage(Guid storageId, double amount)
+        {
+            var storages = await _storagesRepository.Get();
+            var storage = storages.FirstOrDefault(s => s.Id == storageId);
+
+            if (storage is null)
+                throw new InvalidOperationException("Storage not found");
+
+            double remaining = amount;
+
+            foreach (var fuel in storage.FuelItems)
+            {
+                if (remaining <= 0)
+                    break;
+
+                var deducted = Math.Min(fuel.Amount, remaining);
+                fuel.Amount -= deducted;
+                remaining -= deducted;
+            }
+
+            if (remaining > 0)
+                throw new InvalidOperationException("Unexpected error: not enough fuel after deduction");
+
+            await _storagesRepository.Update(
+                storage.Id,
+                storage.Name,
+                storage.Latitude,
+                storage.Longitude,
+                storage.FuelItems
+            );
         }
     }
 }

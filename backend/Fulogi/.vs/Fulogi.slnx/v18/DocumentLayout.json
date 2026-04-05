@@ -3,11 +3,29 @@
   "WorkspaceRootPath": "C:\\BESTHACK\\backend\\Fulogi\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\migrations\\20260402195023_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\developmentdatabasebootstrapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:developmentdatabasebootstrapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\controllers\\storagecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:controllers\\storagecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\fulogidbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\storageentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\migrations\\20260402195023_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\controllers\\stationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -16,10 +34,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\cotracts\\stationrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:cotracts\\stationrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1C1C680E-51F3-578E-097E-A708D486888E}|Fulogi.csproj|c:\\besthack\\backend\\fulogi\\fulogi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -63,12 +77,6 @@
       "AbsoluteMoniker": "D:0:0:{B9D703AD-8B52-7F98-6B4B-428DC7A7F477}|..\\Fulogi.Core\\Fulogi.Core.csproj|c:\\besthack\\backend\\fulogi.core\\enums\\status.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\fulogidbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\storageentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{BA2825E1-89A0-220C-9C0D-A6FBABAAE968}|..\\Fulogi.DataAccess\\Fulogi.DataAccess.csproj|c:\\besthack\\backend\\fulogi.dataaccess\\entities\\fuelrequestentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -88,7 +96,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 33,
           "Children": [
             {
               "$type": "Bookmark",
@@ -124,20 +132,44 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
+              "Title": "DevelopmentDatabaseBootstrapper.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\DevelopmentDatabaseBootstrapper.cs",
+              "RelativeDocumentMoniker": "DevelopmentDatabaseBootstrapper.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\DevelopmentDatabaseBootstrapper.cs",
+              "RelativeToolTip": "DevelopmentDatabaseBootstrapper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:45:41.827Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StorageController.cs",
+              "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Controllers\\StorageController.cs",
+              "RelativeDocumentMoniker": "Controllers\\StorageController.cs",
+              "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Controllers\\StorageController.cs",
+              "RelativeToolTip": "Controllers\\StorageController.cs",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAIwEQAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:44:48.482Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "20260402195023_InitialCreate.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
               "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
               "RelativeToolTip": "..\\Fulogi.DataAccess\\Migrations\\20260402195023_InitialCreate.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAABSAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABIAAABPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T19:50:24.036Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T19:50:24.036Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 9,
               "Title": "Fulogi.csproj",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Fulogi.csproj",
               "RelativeDocumentMoniker": "Fulogi.csproj",
@@ -149,19 +181,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Properties\\launchSettings.json",
               "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Properties\\launchSettings.json",
               "RelativeToolTip": "Properties\\launchSettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAcAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-04-02T19:16:21.467Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 8,
               "Title": "StationRequest.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Cotracts\\StationRequest.cs",
               "RelativeDocumentMoniker": "Cotracts\\StationRequest.cs",
@@ -173,7 +205,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 13,
               "Title": "StationResponse.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Cotracts\\StationResponse.cs",
               "RelativeDocumentMoniker": "Cotracts\\StationResponse.cs",
@@ -185,7 +217,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 17,
               "Title": "Status.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Enums\\Status.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Enums\\Status.cs",
@@ -197,7 +229,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 16,
               "Title": "Priority.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Enums\\Priority.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Enums\\Priority.cs",
@@ -209,7 +241,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 21,
               "Title": "Status.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Enums\\Status.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Enums\\Status.cs",
@@ -221,7 +253,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 25,
               "Title": "Priority.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Enums\\Priority.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Enums\\Priority.cs",
@@ -233,7 +265,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 11,
               "Title": "IStationsRepository.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Abstractions\\IStationsRepository.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Abstractions\\IStationsRepository.cs",
@@ -245,7 +277,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 12,
               "Title": "IStationService.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Abstractions\\IStationService.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Abstractions\\IStationService.cs",
@@ -257,7 +289,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 7,
               "Title": "StationController.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Controllers\\StationController.cs",
               "RelativeDocumentMoniker": "Controllers\\StationController.cs",
@@ -269,7 +301,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 10,
               "Title": "StationService.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Application\\Services\\StationService.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Application\\Services\\StationService.cs",
@@ -281,7 +313,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 14,
               "Title": "StationsRepository.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Repositories\\StationsRepository.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Repositories\\StationsRepository.cs",
@@ -293,7 +325,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 24,
               "Title": "DeliveryEntity.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\DeliveryEntity.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\DeliveryEntity.cs",
@@ -305,7 +337,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 22,
               "Title": "FuelRequestEntity.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\FuelRequestEntity.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\FuelRequestEntity.cs",
@@ -317,19 +349,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 5,
               "Title": "StorageEntity.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
               "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
               "RelativeToolTip": "..\\Fulogi.DataAccess\\Entities\\StorageEntity.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-02T09:00:34.226Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 18,
               "Title": "FuelRequest.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\FuelRequest.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\FuelRequest.cs",
@@ -341,7 +373,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 19,
               "Title": "Delivery.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Delivery.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\Delivery.cs",
@@ -353,7 +385,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 20,
               "Title": "Storage.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Storage.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\Storage.cs",
@@ -365,7 +397,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 15,
               "Title": "Station.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.Core\\Models\\Station.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.Core\\Models\\Station.cs",
@@ -377,7 +409,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 23,
               "Title": "StationEntity.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\Entities\\StationEntity.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\Entities\\StationEntity.cs",
@@ -389,27 +421,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 4,
               "Title": "FulogiDbContext.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\FulogiDbContext.cs",
               "RelativeDocumentMoniker": "..\\Fulogi.DataAccess\\FulogiDbContext.cs",
               "ToolTip": "C:\\BESTHACK\\backend\\Fulogi.DataAccess\\FulogiDbContext.cs",
               "RelativeToolTip": "..\\Fulogi.DataAccess\\FulogiDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABLAAAAAAAAAA==",
+              "ViewState": "AgIAABkAAAAAAAAAAAAMwC0AAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-02T08:24:41.397Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\BESTHACK\\backend\\Fulogi\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\BESTHACK\\backend\\Fulogi\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABdAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAAAMwC4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T07:56:53.949Z"
+              "WhenOpened": "2026-04-02T07:56:53.949Z",
+              "EditorCaption": ""
             }
           ]
         }

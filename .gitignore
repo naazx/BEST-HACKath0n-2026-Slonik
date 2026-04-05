@@ -1,4 +1,7 @@
 node_modules
+dist/
+build.log
+package-lock.json
 
 # .NET build output
 **/bin/
@@ -8,10 +11,13 @@ node_modules
 **/.vs/
 *.user
 *.suo
-
-# Local SQLite data files
-data/*.sqlite
-data/*.db
+*.db
+.vscode/*.log
 
 # Frontend build cache
 **/.vite/
+
+# Local SQLite state
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal

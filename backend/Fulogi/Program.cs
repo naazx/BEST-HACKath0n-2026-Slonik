@@ -6,7 +6,6 @@ using Fulogi.Serialization;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -26,14 +25,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-var dataDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "data");
-Directory.CreateDirectory(dataDir);
 
+var dataDir = ResolveDataDirectory(builder.Environment.ContentRootPath);
+Directory.CreateDirectory(dataDir);
 var dbPath = Path.Combine(dataDir, "fuel-management-dev.sqlite");
 
 builder.Services.AddDbContext<FulogiDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}")
-    );
+    options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddScoped<IStationService, StationService>();
 builder.Services.AddScoped<IStationsRepository, StationsRepository>();
@@ -51,22 +49,39 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FulogiDbContext>();
-    await dbContext.Database.MigrateAsync();
+    await DevelopmentDatabaseBootstrapper.InitializeAsync(dbContext, dbPath, app.Environment.IsDevelopment());
 }
+
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseSwagger();
-
-app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
+
+static string ResolveDataDirectory(string contentRootPath)
+{
+    foreach (var startPath in new[] { contentRootPath, AppContext.BaseDirectory })
+    {
+        var current = new DirectoryInfo(Path.GetFullPath(startPath));
+
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, "data");
+            if (Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+    }
+
+    return Path.Combine(contentRootPath, "data");
+}

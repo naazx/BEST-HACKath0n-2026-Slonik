@@ -25,7 +25,7 @@ namespace Fulogi.Controllers
                 s.Name,
                 s.Latitude,
                 s.Longitude,
-                s.FuelAvailable));
+                s.FuelItems.Select(f => new StorageFuelItemDto(f.FuelType, f.Amount)).ToList()));
 
             return Ok(response);
         }
@@ -33,12 +33,19 @@ namespace Fulogi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateStorage([FromBody] StorageRequest request)
         {
+            var fuelItems = request.FuelItems.Select(f => new StorageFuelItem 
+            { 
+                Id = Guid.NewGuid(), 
+                FuelType = f.FuelType, 
+                Amount = f.Amount 
+            }).ToList();
+
             var (storage, errors) = Storage.Create(
                 Guid.NewGuid(),
                 request.Name,
                 request.Latitude,
                 request.Longitude,
-                request.FuelAvailable);
+                fuelItems);
 
             if (!string.IsNullOrEmpty(errors))
             {
@@ -52,14 +59,21 @@ namespace Fulogi.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateStorage(Guid id, [FromBody] StorageRequest request)
         {
+            var fuelItems = request.FuelItems.Select(f => new StorageFuelItem 
+            { 
+                Id = Guid.NewGuid(), 
+                StorageId = id,
+                FuelType = f.FuelType, 
+                Amount = f.Amount 
+            }).ToList();
             try
             {
                 var storageId = await _storageService.UpdateStorage(
-                    id,
-                    request.Name,
-                    request.Latitude,
-                    request.Longitude,
-                    request.FuelAvailable);
+                id,
+                request.Name,
+                request.Latitude,
+                request.Longitude,
+                fuelItems);
 
                 return Ok(storageId);
             }
