@@ -1,8 +1,10 @@
 ﻿using Fulogi.Core.Abstractions;
 using Fulogi.Core.Enums;
 using Fulogi.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Fulogi.Application.Services
 {
@@ -27,7 +29,6 @@ namespace Fulogi.Application.Services
 
         public async Task<Guid> CreateFuelRequest(FuelRequest fuelRequest)
         {
-            // 1. Формуємо список DTO
             var itemDtos = fuelRequest.Items
                 .Select(i => new FuelRequest.RequestItemDto(i.FuelType, i.Amount))
                 .ToList();
@@ -35,12 +36,10 @@ namespace Fulogi.Application.Services
             var totalRequestedAmount = itemDtos.Sum(i => i.Amount);
 
             var storages = await _storagesRepository.Get();
-            var storage = PickStorageWithCapacity(storages, itemDtos);
+            var storage = PickStorageWithCapacity(storages, totalRequestedAmount);
 
-            // 3. Визначаємо статус
-            var status = storage is not null ? Status.InProgress : Status.Await;
+            var status = fuelRequest.Status;
 
-            // 4. Створюємо запит (один раз)
             var (requestToPersist, createError) = FuelRequest.Create(
                 fuelRequest.Id,
                 fuelRequest.StationId,
@@ -56,10 +55,8 @@ namespace Fulogi.Application.Services
 
             var requestId = await _fuelRequestsRepository.Create(requestToPersist!);
 
-            // 5. Якщо склад знайдено — віднімаємо пальне та створюємо доставку
-            if (storage is not null)
+            if (status == Status.InProgress && storage is not null)
             {
-                // ВІДНІМАЄМО ПАЛИВО
                 foreach (var requestedItem in itemDtos)
                 {
                     var storageFuelItem = storage.FuelItems
@@ -72,13 +69,13 @@ namespace Fulogi.Application.Services
                 }
 
                 await _storagesRepository.Update(
-    storage.Id,
-    storage.Name,
-    storage.Latitude,
-    storage.Longitude,
-    storage.FuelItems.ToList()
-);
-                // СТВОРЮЄМО ДОСТАВКУ
+                    storage.Id,
+                    storage.Name,
+                    storage.Latitude,
+                    storage.Longitude,
+                    storage.FuelItems.ToList()
+                );
+
                 var (delivery, deliveryError) = Delivery.Create(
                     Guid.NewGuid(),
                     requestId,
@@ -168,8 +165,8 @@ namespace Fulogi.Application.Services
                     Status = request.Status,
                     CreatedAt = request.CreatedAt,
                     DistanceKm = station is not null && storage is not null
-? Math.Round(CalculateDistanceKm(station.Latitude, station.Longitude, storage.Latitude, storage.Longitude), 1)
-: null
+                        ? Math.Round(CalculateDistanceKm(station.Latitude, station.Longitude, storage.Latitude, storage.Longitude), 1)
+                        : null
                 };
             }).ToList();
         }
@@ -189,18 +186,11 @@ namespace Fulogi.Application.Services
                 ?? requestDeliveries.OrderByDescending(d => d.CreatedAt).First();
         }
 
-        private static Storage? PickStorageWithCapacity(IReadOnlyList<Storage> storages, IReadOnlyCollection<FuelRequest.RequestItemDto> requestedItems)
+        private static Storage? PickStorageWithCapacity(IReadOnlyList<Storage> storages, double totalAmount)
         {
-            if (requestedItems.Count == 0)
-            {
-                return null;
-            }
-
+            if (totalAmount <= 0) return null;
             return storages
-                .Where(s => requestedItems.All(requestedItem =>
-                    s.FuelItems.Any(storageItem =>
-                        storageItem.FuelType == requestedItem.FuelType &&
-                        storageItem.Amount >= requestedItem.Amount)))
+                .Where(s => s.FuelItems != null && s.FuelItems.Sum(fi => fi.Amount) >= totalAmount)
                 .OrderByDescending(s => s.FuelItems.Sum(fi => fi.Amount))
                 .FirstOrDefault();
         }
