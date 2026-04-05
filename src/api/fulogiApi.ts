@@ -1,7 +1,5 @@
 /** Use Vite proxy in dev (`/api` → backend). Override with `VITE_API_BASE` if needed. */
-const BASE = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE
-  ? String(import.meta.env.VITE_API_BASE).replace(/\/$/, '')
-  : '';
+const BASE = 'https://fulogi.onrender.com';
 
 export const FUEL_TYPES = ['A95', 'A92', 'Diesel', 'LPG'] as const;
 
