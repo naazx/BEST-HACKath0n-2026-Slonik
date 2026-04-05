@@ -73,6 +73,10 @@ namespace Fulogi.Controllers
 
                 return Ok(deliveryId);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
@@ -82,7 +86,14 @@ namespace Fulogi.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<Guid>> DeleteDelivery(Guid id)
         {
-            return Ok(await _deliveryService.DeleteDelivery(id));
+            try
+            {
+                return Ok(await _deliveryService.DeleteDelivery(id));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

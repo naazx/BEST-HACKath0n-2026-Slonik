@@ -74,13 +74,29 @@ namespace Fulogi.Controllers
                 request.Longitude,
                 fuelItems);
 
-            return Ok(storageId);
+                return Ok(storageId);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<Guid>> DeleteStorage(Guid id)
         {
-            return Ok(await _storageService.DeleteStorage(id));
+            try
+            {
+                return Ok(await _storageService.DeleteStorage(id));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

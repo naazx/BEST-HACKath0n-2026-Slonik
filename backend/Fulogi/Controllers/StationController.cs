@@ -45,14 +45,31 @@ namespace Fulogi.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateStation(Guid id, [FromBody] StationRequest request)
         {
-            var stationId = await _stationService.UpdateStation(id, request.Name, request.Latitude, request.Longitude);
-
-            return Ok(stationId);
+            try
+            {
+                var stationId = await _stationService.UpdateStation(id, request.Name, request.Latitude, request.Longitude);
+                return Ok(stationId);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<Guid>> DeleteStation(Guid id)
         {
-            return Ok(await _stationService.DeleteStation(id));
+            try
+            {
+                return Ok(await _stationService.DeleteStation(id));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

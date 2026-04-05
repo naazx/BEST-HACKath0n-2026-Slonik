@@ -54,7 +54,7 @@ namespace Fulogi.DataAccess.Repositories
 
         public async Task<Guid> Update(Guid id, string name, double latitude, double longitude, List<StorageFuelItem> fuelItems)
         {
-            await _context.Storages
+            var updatedCount = await _context.Storages
                 .Where(s => s.Id == id)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(b => b.Name, _ => name)
@@ -75,14 +75,37 @@ namespace Fulogi.DataAccess.Repositories
             
             await _context.SaveChangesAsync();
 
+            if (updatedCount == 0)
+            {
+                throw new KeyNotFoundException("Storage was not found.");
+            }
+
             return id;
         }
 
         public async Task<Guid> Delete(Guid id)
         {
-            await _context.Storages
+            var storageExists = await _context.Storages
+                .AsNoTracking()
+                .AnyAsync(s => s.Id == id);
+
+            if (!storageExists)
+            {
+                throw new KeyNotFoundException("Storage was not found.");
+            }
+
+            await _context.Deliveries
+                .Where(d => d.StorageId == id)
+                .ExecuteDeleteAsync();
+
+            var deletedCount = await _context.Storages
                 .Where(s => s.Id == id)
                 .ExecuteDeleteAsync();
+
+            if (deletedCount == 0)
+            {
+                throw new KeyNotFoundException("Storage was not found.");
+            }
 
             return id;
         }

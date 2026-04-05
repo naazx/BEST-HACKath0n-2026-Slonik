@@ -84,27 +84,27 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export function dtoPriorityToUi(p: unknown): UiPriority {
-  if (p === 1 || p === 'low') return 'low';
-  if (p === 2 || p === 'medium') return 'medium';
-  if (p === 3 || p === 'high') return 'high';
+  if (p === 1 || p === 'low' || p === 'Low') return 'low';
+  if (p === 2 || p === 'medium' || p === 'Medium') return 'medium';
+  if (p === 3 || p === 'high' || p === 'High') return 'high';
   return 'medium';
 }
 
-export function uiPriorityToApi(p: UiPriority): string {
-  return p === 'low' ? 'low' : p === 'medium' ? 'medium' : 'high';
+export function uiPriorityToApi(p: UiPriority): number {
+  return p === 'low' ? 1 : p === 'medium' ? 2 : 3;
 }
 
 export function dtoStatusToUi(s: unknown): UiRequestStatus {
-  if (s === 1 || s === 'await') return 'pending';
-  if (s === 2 || s === 'inProgress') return 'in_process';
-  if (s === 3 || s === 'done') return 'delivered';
+  if (s === 1 || s === 'await' || s === 'Await') return 'pending';
+  if (s === 2 || s === 'inProgress' || s === 'InProgress') return 'in_process';
+  if (s === 3 || s === 'done' || s === 'Done') return 'delivered';
   return 'pending';
 }
 
-export function uiStatusToApi(s: UiRequestStatus): string {
-  if (s === 'pending') return 'await';
-  if (s === 'in_process') return 'inProgress';
-  return 'done';
+export function uiStatusToApi(s: UiRequestStatus): number {
+  if (s === 'pending') return 1;
+  if (s === 'in_process') return 2;
+  return 3;
 }
 
 // --- Stations
@@ -163,8 +163,8 @@ export function getFuelRequestsSorted(): Promise<FuelRequestDto[]> {
 export function createFuelRequest(body: {
   stationId: string;
   fuelAmount: number;
-  priority: string;
-  status: string;
+  priority: number;
+  status: number;
   createdAt: string;
 }): Promise<string> {
   return apiJson<string>('/api/FuelRequest', { method: 'POST', body: JSON.stringify(body) });
@@ -175,8 +175,8 @@ export function updateFuelRequest(
   body: {
     stationId: string;
     fuelAmount: number;
-    priority: string;
-    status: string;
+    priority: number;
+    status: number;
     createdAt: string;
   },
 ): Promise<string> {

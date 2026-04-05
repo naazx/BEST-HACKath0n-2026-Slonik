@@ -2,20 +2,28 @@ using Fulogi.Application.Services;
 using Fulogi.Core.Abstractions;
 using Fulogi.DataAccess;
 using Fulogi.DataAccess.Repositories;
+using Fulogi.Serialization;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
+
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.Converters.Add(new PriorityJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new StatusJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new PriorityJsonConverter());
+    options.SerializerOptions.Converters.Add(new StatusJsonConverter());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var dataDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "data");
 Directory.CreateDirectory(dataDir);
@@ -34,8 +42,11 @@ builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 builder.Services.AddScoped<IDeliveriesRepository, DeliveriesRepository>();
 
 var app = builder.Build();
-
-await EnsureDatabaseSchemaAsync(app.Services);
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FulogiDbContext>();
+    await DevelopmentDatabaseBootstrapper.InitializeAsync(dbContext, dbPath, app.Environment.IsDevelopment());
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -48,120 +59,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-static async Task EnsureDatabaseSchemaAsync(IServiceProvider services)
-{
-    using var scope = services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<FulogiDbContext>();
-
-    await dbContext.Database.EnsureCreatedAsync();
-    await using var connection = dbContext.Database.GetDbConnection();
-    await connection.OpenAsync();
-
-    await EnsureStationsTableAsync(dbContext, connection);
-    await EnsureStoragesTableAsync(dbContext, connection);
-    await EnsureFuelRequestsTableAsync(dbContext, connection); // Оновлений метод
-    await EnsureDeliveriesTableAsync(dbContext, connection);
-}
-
-static async Task EnsureFuelRequestsTableAsync(FulogiDbContext dbContext, DbConnection connection)
-{
-
-    if (!await TableExistsAsync(connection, "FuelRequests"))
-    {
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE "FuelRequests" (
-                "Id" TEXT NOT NULL CONSTRAINT "PK_FuelRequests" PRIMARY KEY,
-                "StationId" TEXT NOT NULL,
-                "Priority" INTEGER NOT NULL,
-                "Status" INTEGER NOT NULL,
-                "CreatedAt" TEXT NOT NULL
-            );
-            CREATE INDEX "IX_FuelRequests_StationId" ON "FuelRequests" ("StationId");
-            """);
-    }
-
-    if (!await TableExistsAsync(connection, "FuelRequestItems"))
-    {
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE "FuelRequestItems" (
-                "Id" TEXT NOT NULL CONSTRAINT "PK_FuelRequestItems" PRIMARY KEY,
-                "FuelRequestId" TEXT NOT NULL,
-                "FuelType" INTEGER NOT NULL,
-                "Amount" REAL NOT NULL,
-                CONSTRAINT "FK_FuelRequestItems_FuelRequests_FuelRequestId" 
-                    FOREIGN KEY ("FuelRequestId") REFERENCES "FuelRequests" ("Id") ON DELETE CASCADE
-            );
-            CREATE INDEX "IX_FuelRequestItems_FuelRequestId" ON "FuelRequestItems" ("FuelRequestId");
-            """);
-    }
-}
-
-static async Task EnsureStationsTableAsync(FulogiDbContext dbContext, DbConnection connection)
-{
-    if (await TableExistsAsync(connection, "Stations")) return;
-    await dbContext.Database.ExecuteSqlRawAsync("""
-        CREATE TABLE "Stations" (
-            "Id" TEXT NOT NULL CONSTRAINT "PK_Stations" PRIMARY KEY,
-            "Name" TEXT NULL,
-            "Latitude" REAL NOT NULL,
-            "Longitude" REAL NOT NULL
-        );
-        """);
-}
-
-static async Task EnsureStoragesTableAsync(FulogiDbContext dbContext, DbConnection connection)
-{
-    if (!await TableExistsAsync(connection, "Storages"))
-    {
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE "Storages" (
-                "Id" TEXT NOT NULL CONSTRAINT "PK_Storages" PRIMARY KEY,
-                "Name" TEXT NULL,
-                "Latitude" REAL NOT NULL,
-                "Longitude" REAL NOT NULL
-            );
-            """);
-    }
-    if (!await TableExistsAsync(connection, "StorageFuelItems"))
-    {
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE "StorageFuelItems" (
-                "Id" TEXT NOT NULL CONSTRAINT "PK_StorageFuelItems" PRIMARY KEY,
-                "StorageId" TEXT NOT NULL,
-                "FuelType" INTEGER NOT NULL,
-                "Amount" REAL NOT NULL,
-                CONSTRAINT "FK_StorageFuelItems_Storages_StorageId" 
-                    FOREIGN KEY ("StorageId") REFERENCES "Storages" ("Id") ON DELETE CASCADE
-            );
-            CREATE INDEX "IX_StorageFuelItems_StorageId" ON "StorageFuelItems" ("StorageId");
-            """);
-    }
-}
-
-static async Task EnsureDeliveriesTableAsync(FulogiDbContext dbContext, DbConnection connection)
-{
-    if (await TableExistsAsync(connection, "Deliveries")) return;
-    await dbContext.Database.ExecuteSqlRawAsync("""
-        CREATE TABLE "Deliveries" (
-            "Id" TEXT NOT NULL CONSTRAINT "PK_Deliveries" PRIMARY KEY,
-            "RequestId" TEXT NOT NULL,
-            "StorageId" TEXT NOT NULL,
-            "DeliveredAmount" REAL NOT NULL,
-            "Status" INTEGER NOT NULL,
-            "CreatedAt" TEXT NOT NULL
-        );
-        """);
-}
-
-static async Task<bool> TableExistsAsync(DbConnection connection, string tableName)
-{
-    await using var command = connection.CreateCommand();
-    command.CommandText = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = $name LIMIT 1;";
-    var parameter = command.CreateParameter();
-    parameter.ParameterName = "$name";
-    parameter.Value = tableName;
-    command.Parameters.Add(parameter);
-    var result = await command.ExecuteScalarAsync();
-    return result is not null;
-}
