@@ -592,7 +592,13 @@ export async function getStorages(): Promise<StorageDto[]> {
   }
 }
 
-export function createStorage(body: StorageUpsertBody): Promise<string> {
+<<<<<<< HEAD
+export function createStorage(body: {
+  name: string;
+  latitude: number;
+  longitude: number;
+  fuelAvailable: number;
+}): Promise<string> {
   return handleCreateMutation({
     entity: 'storage',
     body: {
@@ -623,6 +629,14 @@ export function updateStorage(id: string, body: StorageUpsertBody): Promise<stri
       fuelItems: normalizeFuelItems(payload.fuelItems),
     }),
   });
+=======
+export function createStorage(body: StorageUpsertBody): Promise<string> {
+  return apiJson<string>('/api/Storage', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export function updateStorage(id: string, body: StorageUpsertBody): Promise<string> {
+  return apiJson<string>(`/api/Storage/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+>>>>>>> origin/main
 }
 
 export function deleteStorage(id: string): Promise<string> {
@@ -657,7 +671,14 @@ export async function getFuelRequestsSorted(): Promise<FuelRequestDto[]> {
   }
 }
 
-export function createFuelRequest(body: FuelRequestUpsertBody): Promise<string> {
+<<<<<<< HEAD
+export function createFuelRequest(body: {
+  stationId: string;
+  fuelAmount: number;
+  priority: number;
+  status: number;
+  createdAt: string;
+}): Promise<string> {
   return handleCreateMutation({
     entity: 'fuelRequest',
     body: {
@@ -725,6 +746,14 @@ export function updateFuelRequest(
       };
     },
   });
+=======
+export function createFuelRequest(body: FuelRequestUpsertBody): Promise<string> {
+  return apiJson<string>('/api/FuelRequest', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export function updateFuelRequest(id: string, body: FuelRequestUpsertBody): Promise<string> {
+  return apiJson<string>(`/api/FuelRequest/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+>>>>>>> origin/main
 }
 
 export function deleteFuelRequest(id: string): Promise<string> {
@@ -769,7 +798,14 @@ export async function getDeliveries(): Promise<DeliveryDto[]> {
   }
 }
 
-export function createDelivery(body: DeliveryUpsertBody): Promise<string> {
+<<<<<<< HEAD
+export function createDelivery(body: {
+  requestId: string;
+  storageId: string;
+  deliveredAmount: number;
+  status: string;
+  createdAt: string;
+}): Promise<string> {
   return handleCreateMutation({
     entity: 'delivery',
     body,
@@ -795,6 +831,14 @@ export function updateDelivery(id: string, body: DeliveryUpsertBody): Promise<st
       createdAt: payload.createdAt,
     }),
   });
+=======
+export function createDelivery(body: DeliveryUpsertBody): Promise<string> {
+  return apiJson<string>('/api/Delivery', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export function updateDelivery(id: string, body: DeliveryUpsertBody): Promise<string> {
+  return apiJson<string>(`/api/Delivery/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+>>>>>>> origin/main
 }
 
 scheduleOfflineSync();
